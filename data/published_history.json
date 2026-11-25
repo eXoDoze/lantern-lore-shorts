@@ -15,6 +15,23 @@
         "pixabay:4910",
         "pixabay:220359"
       ]
+    },
+    {
+      "date": "2026-11-25T19:49:14+00:00",
+      "series": "unexplained_history",
+      "subject": "The Devil's Footprints of Devon",
+      "title": "The Devil's Footprints of Devon",
+      "duration": 47.5,
+      "video_id": "fA04sWyDSds",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:266987",
+        "pixabay:266428",
+        "pixabay:336603",
+        "pixabay:165852",
+        "pixabay:258799",
+        "pixabay:78"
+      ]
     }
   ]
 }
