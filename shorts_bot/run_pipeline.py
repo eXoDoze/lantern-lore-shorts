@@ -16,7 +16,7 @@ from pathlib import Path
 
 from . import channel_config as cfg
 from .ambient_music import make_background
-from .footage_pexels import fetch_clip
+from .footage_stock import fetch_clip
 from .story_writer import write_script
 from .topic_planner import find_new_topic, load_history, pick_series, save_history, uploads_today
 from .video_renderer import render
@@ -27,7 +27,8 @@ OUTPUT_DIR = ROOT / "output"
 
 
 def build_description(script, series, clips):
-    authors = sorted({c["author"] for c in clips})
+    credits = sorted({f'{c["author"]} ({c["source"]})' for c in clips if c["source"] != "generated"})
+    footage = ("Footage: " + ", ".join(credits) + ".") if credits else "Visuals: original."
     if series["fiction"]:
         note = "An original fictional story, told for entertainment."
     else:
@@ -37,7 +38,7 @@ def build_description(script, series, clips):
         f"{script.get('description', '').strip()}\n\n"
         f"{note}\n\n"
         f"{cfg.CHANNEL_NAME} - {cfg.CHANNEL_TAGLINE} New legends every day.\n\n"
-        f"Narration: AI voice. Footage: Pexels ({', '.join(authors)}). Music: original.\n\n"
+        f"Narration: AI voice. {footage} Music: original.\n\n"
         f"{hashtags}"
     )
 
@@ -78,7 +79,7 @@ def make_one(history, series_key, upload_enabled, work_dir):
 
     used_ids = set()
     for v in history["videos"][-300:]:
-        used_ids.update(v.get("pexels_ids", []))
+        used_ids.update(v.get("footage_ids", []))
     clips = []
     for i, scene in enumerate(script["scenes"]):
         scene_len = sum(t["end"] - t["start"] for t in timeline if t["scene"] == i) + 1
@@ -106,7 +107,7 @@ def make_one(history, series_key, upload_enabled, work_dir):
         "duration": round(duration, 1),
         "video_id": video_id,
         "privacy": status,
-        "pexels_ids": [c["id"] for c in clips],
+        "footage_ids": [c["id"] for c in clips],
     }
     write_summary([
         f"## {script['title']}",
