@@ -1,1 +1,20 @@
-{"videos": []}
+{
+  "videos": [
+    {
+      "date": "2026-11-25T14:44:34+00:00",
+      "series": "appalachian",
+      "subject": "The Kecksburg UFO Incident",
+      "title": "The Kecksburg UFO: What Fell in the Pennsylvania Woods?",
+      "duration": 58.1,
+      "video_id": "Mf7PPgQdiDk",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:151443",
+        "pixabay:286675",
+        "pixabay:2800",
+        "pixabay:4910",
+        "pixabay:220359"
+      ]
+    }
+  ]
+}
