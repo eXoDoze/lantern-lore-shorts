@@ -47,6 +47,9 @@ Last scene ends with an eerie closing line; do not ask for likes or subscription
 For every scene give a stock-footage search query (2-4 plain English words describing a filmable,
 atmospheric shot, e.g. "foggy forest night", "old wooden cabin", "lantern in dark"). No people's faces,
 no brand names, no monsters (stock sites have none) - use mood shots instead.
+The footage MUST fit the story's setting: same kind of landscape and country, same season and time of day
+(e.g. a winter story in an English village -> "snowy village night", "frozen field dawn", never a summer
+river or an Asian temple). Avoid objects that clearly belong to another culture or era.
 {feedback}
 Return JSON exactly like:
 {{"title": "catchy but honest title, max 70 characters, no hashtags, no emojis",

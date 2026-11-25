@@ -11,7 +11,7 @@ W, H, FPS = 1080, 1920, 30
 LOOK = (
     f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps={FPS},"
     "eq=brightness=-0.07:saturation=0.55:contrast=1.08,"
-    "colorbalance=bs=0.06:bm=0.03,vignette=PI/4,noise=alls=7:allf=t,setsar=1"
+    "colorbalance=bs=0.06:bm=0.03,vignette=PI/4,noise=alls=5:allf=t,setsar=1"
 )
 
 
@@ -66,7 +66,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Caption,Anton,104,&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,0,0,0,0,100,100,1,0,1,7,3,2,60,60,620,1
-Style: Label,Anton,50,&H0033B8FF,&H0033B8FF,&H00000000,&H64000000,0,0,0,0,100,100,6,0,1,4,0,8,60,60,150,1
+Style: Label,Anton,58,&H0033B8FF,&H0033B8FF,&H00000000,&H64000000,0,0,0,0,100,100,6,0,1,4,0,8,60,60,150,1
 Style: Brand,Anton,40,&H00D0D0D0,&H00D0D0D0,&H00000000,&H64000000,0,0,0,0,100,100,3,0,1,3,0,2,60,60,120,1
 
 [Events]
@@ -129,12 +129,12 @@ def render(clips, timeline, narration_wav, music_wav, duration, series_label, wo
         f"[0:v]ass='{ass_arg}':fontsdir='{font_arg}',fade=t=out:st={fade_out:.2f}:d=0.6[v];"
         "[1:a]aformat=channel_layouts=stereo,aresample=44100[voice];"
         "[2:a]volume=0.22[music];"
-        "[voice][music]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]"
+        "[voice][music]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=44100[a]"
     )
     _run([
         "ffmpeg", "-y", "-loglevel", "error", "-i", str(visuals), "-i", str(narration_wav), "-i", str(music_wav),
         "-filter_complex", filter_complex, "-map", "[v]", "-map", "[a]", "-t", f"{duration:.3f}",
-        "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-r", str(FPS),
+        "-c:v", "libx264", "-preset", "medium", "-crf", "23", "-maxrate", "8M", "-bufsize", "16M", "-pix_fmt", "yuv420p", "-r", str(FPS),
         "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(out_path)])
     print(f"[render] Finished {out_path}")
     return out_path
