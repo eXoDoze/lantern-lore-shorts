@@ -32,6 +32,22 @@
         "pixabay:258799",
         "pixabay:78"
       ]
+    },
+    {
+      "date": "2026-11-25T22:59:07+00:00",
+      "series": "campfire_tales",
+      "subject": "The Empty Cabin Porch",
+      "title": "The Knock at the Second Floor Window",
+      "duration": 49.1,
+      "video_id": "v5hoi7q6IFU",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:206137",
+        "pixabay:345013",
+        "pixabay:153718",
+        "pixabay:254850",
+        "pixabay:1623"
+      ]
     }
   ]
 }
