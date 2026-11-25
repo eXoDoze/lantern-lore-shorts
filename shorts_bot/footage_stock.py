@@ -18,7 +18,7 @@ PEXELS_URLS = ["https://api.pexels.com/v1/videos/search", "https://api.pexels.co
 
 
 # ------------------------------------------------------------------ Pixabay
-def _pixabay_candidates(query):
+def _pixabay_candidates(query, landscape=False):
     key = os.environ.get("PIXABAY_API_KEY", "").strip()
     if not key:
         return []
@@ -36,7 +36,8 @@ def _pixabay_candidates(query):
         if not files:
             continue
         portrait = [f for f in files if f.get("height", 0) >= f.get("width", 1)]
-        pool = portrait or files
+        wide = [f for f in files if f.get("width", 0) > f.get("height", 0)]
+        pool = (wide or files) if landscape else (portrait or files)
         best = min(pool, key=lambda f: abs(max(f.get("height", 0), f.get("width", 0)) - 1920))
         out.append({
             "uid": f"pixabay:{h['id']}",
@@ -50,14 +51,14 @@ def _pixabay_candidates(query):
 
 
 # ------------------------------------------------------------------ Pexels (only if a key exists)
-def _pexels_candidates(query):
+def _pexels_candidates(query, landscape=False):
     key = os.environ.get("PEXELS_API_KEY", "").strip()
     if not key:
         return []
     for url in PEXELS_URLS:
         try:
             r = requests.get(url, headers={"Authorization": key},
-                             params={"query": query, "per_page": 20, "orientation": "portrait"}, timeout=30)
+                             params={"query": query, "per_page": 20, "orientation": "landscape" if landscape else "portrait"}, timeout=30)
             if r.status_code == 404:
                 continue
             r.raise_for_status()
@@ -82,16 +83,16 @@ def _pexels_candidates(query):
 
 
 # ------------------------------------------------------------------ generated fallback
-def _generated_fog(seconds, path):
+def _generated_fog(seconds, path, landscape=False):
     """Dark drifting fog made from noise - original, needs no service at all."""
     u, v = random.choice([(124, 130), (132, 124), (126, 126), (130, 132)])  # slight colour tint
     vf = (
         "format=yuv420p,noise=c0s=100:c0f=t,tmix=frames=20,gblur=sigma=1.2,"
-        f"scale=1080:1920:flags=bicubic,eq=contrast=2.2:brightness=-0.12,lutyuv=u={u}:v={v},format=yuv420p"
+        f"scale={'1920:1080' if landscape else '1080:1920'}:flags=bicubic,eq=contrast=2.2:brightness=-0.12,lutyuv=u={u}:v={v},format=yuv420p"
     )
     subprocess.run([
         "ffmpeg", "-y", "-loglevel", "error",
-        "-f", "lavfi", "-i", f"color=c=0x606060:s=27x48:r=30:d={seconds + 1:.2f}",
+        "-f", "lavfi", "-i", f"color=c=0x606060:s={'48x27' if landscape else '27x48'}:r=30:d={seconds + 1:.2f}",
         "-vf", vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "24", str(path)], check=True)
 
 
@@ -103,15 +104,15 @@ def _download(link, path):
                 fh.write(chunk)
 
 
-def fetch_clip(query, min_seconds, work_dir, used_ids, index):
+def fetch_clip(query, min_seconds, work_dir, used_ids, index, landscape=False):
     path = Path(work_dir) / f"clip_{index}.mp4"
     queries = [query] + random.sample(cfg.FALLBACK_FOOTAGE_QUERIES, 3)
     for q in queries:
-        candidates = [c for c in _pixabay_candidates(q) + _pexels_candidates(q) if c["uid"] not in used_ids]
+        candidates = [c for c in _pixabay_candidates(q, landscape) + _pexels_candidates(q, landscape) if c["uid"] not in used_ids]
         if not candidates:
             continue
-        # prefer clips that are long enough, then portrait ones
-        candidates.sort(key=lambda c: (c["duration"] < min_seconds, not c["portrait"], random.random()))
+        # prefer clips that are long enough, then the right orientation
+        candidates.sort(key=lambda c: (c["duration"] < min_seconds, c["portrait"] == landscape, random.random()))
         for c in candidates[:5]:
             try:
                 _download(c["link"], path)
@@ -121,5 +122,5 @@ def fetch_clip(query, min_seconds, work_dir, used_ids, index):
             used_ids.add(c["uid"])
             return {"path": str(path), "id": c["uid"], "author": c["author"], "source": c["source"]}
     print(f"[footage] No stock clip for '{query}' -> generated fog background")
-    _generated_fog(min_seconds, path)
+    _generated_fog(min_seconds, path, landscape)
     return {"path": str(path), "id": f"fog:{index}", "author": "original", "source": "generated"}

@@ -9,7 +9,7 @@ SYSTEM = f"""You are the head writer and narrator of "{cfg.CHANNEL_NAME}", a You
 that retells legends, folklore and unexplained stories in a calm, eerie, campfire storyteller voice.
 Style: vivid but plain spoken English, short sentences, second person or storyteller voice,
 no profanity, no gore, suspense over shock. Every short opens with a hook in the first sentence
-and ends with a chilling final line. Never use emojis. Spell out numbers as words."""
+and ends with a chilling final line and a short question to the viewer. Never use emojis. Spell out numbers as words."""
 
 
 def word_count(text):
@@ -20,7 +20,17 @@ def full_narration(script):
     return " ".join(s["narration"].strip() for s in script["scenes"])
 
 
-def _script_prompt(series, topic, feedback=""):
+HOOK_RULES = """HOOK (most important part - viewers swipe away within two seconds):
+- The very first sentence has at most twelve words and drops the viewer straight into the strangest,
+  most unsettling moment or claim of the story. No slow scene-setting, no dates or "In the year ..." openings,
+  no "Have you ever heard of ...".
+- Good hook patterns: a disturbing detail ("Every dog in Kecksburg started howling at the same minute."),
+  a warning ("If you hear your name in these woods, don't answer."), a contradiction
+  ("The footprints went straight up a wall - and kept going.").
+- Then keep tension rising; reveal the most eerie detail near the end."""
+
+
+def _script_prompt(series, topic, feedback="", performance_hint=""):
     if series["fiction"]:
         truth_rules = (
             "This is an ORIGINAL fictional story. It must not copy any existing story. "
@@ -42,8 +52,12 @@ Region: {topic['region']}
 {truth_rules}
 
 Length: {cfg.MIN_WORDS}-{cfg.MAX_WORDS} words of narration in total (about 45-57 seconds spoken).
-Structure: 4 to 6 scenes. Scene 1 = hook (one or two sentences that make people stay).
-Last scene ends with an eerie closing line; do not ask for likes or subscriptions.
+Structure: 4 to 6 scenes. Scene 1 = hook.
+{HOOK_RULES}
+Ending: the last scene ends with an eerie closing line, followed by ONE short question to the viewer
+(max ten words) that invites a comment, e.g. "Would you have opened the door?" or "Have you ever seen these lights?".
+Never ask for likes or subscriptions.
+{performance_hint}
 For every scene give a stock-footage search query (2-4 plain English words describing a filmable,
 atmospheric shot, e.g. "foggy forest night", "old wooden cabin", "lantern in dark"). No people's faces,
 no brand names, no monsters (stock sites have none) - use mood shots instead.
@@ -52,7 +66,7 @@ The footage MUST fit the story's setting: same kind of landscape and country, sa
 river or an Asian temple). Avoid objects that clearly belong to another culture or era.
 {feedback}
 Return JSON exactly like:
-{{"title": "catchy but honest title, max 70 characters, no hashtags, no emojis",
+{{"title": "curiosity-driven but honest title, max 60 characters, no hashtags, no emojis, no clickbait lies",
  "scenes": [{{"narration": "...", "footage_query": "..."}}],
  "description": "2 short sentences for the YouTube description",
  "tags": ["8 to 12 lowercase tags"]}}"""
@@ -95,9 +109,9 @@ def _valid(script):
     return all(isinstance(s, dict) and s.get("narration") and s.get("footage_query") for s in scenes) and script.get("title")
 
 
-def write_script(series, topic, feedback=""):
+def write_script(series, topic, feedback="", performance_hint=""):
     for attempt in range(3):
-        script = generate_json(_script_prompt(series, topic, feedback), system=SYSTEM, temperature=0.9)
+        script = generate_json(_script_prompt(series, topic, feedback, performance_hint), system=SYSTEM, temperature=0.9)
         if not _valid(script):
             print("[writer] Invalid script structure, retrying.")
             continue

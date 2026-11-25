@@ -1,0 +1,101 @@
+name: "Lantern Lore - Wochen-Kompilation erstellen und hochladen"
+
+on:
+  schedule:
+    # Sundays 16:37 UTC (17:37 German time, 11:37 US Eastern)
+    - cron: "37 16 * * 0"
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "Auf YouTube hochladen? (false = nur Testvideo als Download)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lantern-lore-shorts
+  cancel-in-progress: false
+
+jobs:
+  make-weekly:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: ffmpeg installieren
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng libsndfile1 > /dev/null
+
+      - name: Kokoro-Sprachmodell aus Cache holen
+        id: kokoro-cache
+        uses: actions/cache@v4
+        with:
+          path: models/kokoro
+          key: kokoro-model-v1.0
+
+      - name: Kokoro-Sprachmodell herunterladen (nur beim ersten Mal)
+        if: steps.kokoro-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p models/kokoro
+          curl -fsSL --retry 3 -o models/kokoro/kokoro-v1.0.onnx https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx || echo "Kokoro model download failed - Edge-TTS fallback will be used"
+          curl -fsSL --retry 3 -o models/kokoro/voices-v1.0.bin https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin || true
+
+      - name: Python-Pakete installieren
+        run: pip install -r requirements.txt
+
+      - name: Wochen-Kompilation erstellen
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          SHORTS_PER_DAY: ${{ vars.SHORTS_PER_DAY }}
+          LL_PAUSED: ${{ vars.LL_PAUSED }}
+          KOKORO_MODEL_DIR: models/kokoro
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.upload }}" = "true" ]; then
+            python -m shorts_bot.weekly_compilation
+          else
+            python -m shorts_bot.weekly_compilation --no-upload
+          fi
+
+      - name: Video als Download bereitstellen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lantern-lore-weekly
+          path: |
+            output/*.mp4
+            output/*.jpg
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Verlauf speichern
+        if: always()
+        run: |
+          git config user.name "lantern-lore-bot"
+          git config user.email "lantern-lore-bot@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Nichts zu speichern."
+            exit 0
+          fi
+          git commit -m "Verlauf: neue Wochen-Kompilation"
+          for i in 1 2 3; do
+            git pull --rebase -q && git push -q && break
+            sleep 5
+          done

@@ -1,4 +1,9 @@
-"""Uploads the finished Short through the official YouTube Data API."""
+"""Everything that talks to YouTube: upload, playlists, thumbnails, statistics.
+
+Upload needs only the youtube.upload permission. Playlists and statistics need the
+broader "youtube" permission; if the refresh token does not have it yet, those
+extras are skipped with a warning and uploading keeps working.
+"""
 
 import os
 import time
@@ -11,33 +16,41 @@ from googleapiclient.http import MediaFileUpload
 
 from . import channel_config as cfg
 
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+_client_cache = None
 
 
-def _client():
+def get_client():
+    global _client_cache
+    if _client_cache is not None:
+        return _client_cache
     missing = [k for k in ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN") if not os.environ.get(k)]
     if missing:
         raise RuntimeError(f"Missing GitHub secrets: {', '.join(missing)}")
+    # no explicit scopes: the token keeps exactly the permissions it was granted
     creds = Credentials(
         None,
         refresh_token=os.environ["YT_REFRESH_TOKEN"].strip(),
         token_uri="https://oauth2.googleapis.com/token",
         client_id=os.environ["YT_CLIENT_ID"].strip(),
         client_secret=os.environ["YT_CLIENT_SECRET"].strip(),
-        scopes=SCOPES,
     )
     creds.refresh(Request())
-    return build("youtube", "v3", credentials=creds, cache_discovery=False)
+    _client_cache = build("youtube", "v3", credentials=creds, cache_discovery=False)
+    return _client_cache
 
 
-def upload(video_path, title, description, tags):
-    youtube = _client()
+def _permission_problem(exc):
+    return isinstance(exc, HttpError) and exc.resp.status in (401, 403)
+
+
+def upload(video_path, title, description, tags, category_id=None):
+    youtube = get_client()
     body = {
         "snippet": {
-            "title": title,
+            "title": title[:100],
             "description": description[:4900],
             "tags": tags,
-            "categoryId": cfg.YOUTUBE_CATEGORY_ID,
+            "categoryId": category_id or cfg.YOUTUBE_CATEGORY_ID,
             "defaultLanguage": "en",
             "defaultAudioLanguage": "en",
         },
@@ -62,8 +75,68 @@ def upload(video_path, title, description, tags):
             raise
     video_id = response["id"]
     status = response.get("status", {}).get("privacyStatus")
-    print(f"[upload] Uploaded https://youtube.com/shorts/{video_id} (status: {status})")
+    print(f"[upload] Uploaded https://youtube.com/watch?v={video_id} (status: {status})")
     if cfg.PRIVACY_STATUS == "public" and status != "public":
         print("::warning::YouTube set the video to private. The Google Cloud project probably needs the "
               "free YouTube API audit (see README, section 'Videos bleiben privat').")
     return video_id, status
+
+
+def create_playlist(title, description):
+    youtube = get_client()
+    resp = youtube.playlists().insert(part="snippet,status", body={
+        "snippet": {"title": title[:150], "description": description[:4900], "defaultLanguage": "en"},
+        "status": {"privacyStatus": "public"},
+    }).execute()
+    print(f"[playlist] Created playlist '{title}' ({resp['id']})")
+    return resp["id"]
+
+
+def add_to_playlist(playlist_id, video_id):
+    try:
+        get_client().playlistItems().insert(part="snippet", body={
+            "snippet": {"playlistId": playlist_id, "resourceId": {"kind": "youtube#video", "videoId": video_id}},
+        }).execute()
+        print(f"[playlist] Added {video_id} to {playlist_id}")
+        return "ok"
+    except HttpError as exc:
+        if exc.resp.status == 404:
+            return "notfound"
+        if _permission_problem(exc):
+            print("::warning::Playlist skipped - the refresh token lacks the 'youtube' permission (see README).")
+        else:
+            print(f"[playlist] Could not add video: {exc}")
+        return "error"
+
+
+def set_thumbnail(video_id, image_path):
+    try:
+        get_client().thumbnails().set(videoId=video_id, media_body=MediaFileUpload(str(image_path), mimetype="image/jpeg")).execute()
+        print("[upload] Custom thumbnail set")
+    except HttpError as exc:
+        print(f"::warning::Thumbnail not set ({exc.resp.status}). Custom thumbnails need a phone-verified channel "
+              "(youtube.com/verify).")
+
+
+def fetch_statistics(video_ids):
+    """Returns {video_id: {"views": int, "likes": int, "comments": int}}; empty dict if not permitted."""
+    stats = {}
+    youtube = get_client()
+    for i in range(0, len(video_ids), 50):
+        batch = video_ids[i:i + 50]
+        try:
+            resp = youtube.videos().list(part="statistics", id=",".join(batch), maxResults=50).execute()
+        except HttpError as exc:
+            if _permission_problem(exc):
+                print("::warning::Statistics skipped - the refresh token lacks the 'youtube' permission (see README).")
+            else:
+                print(f"[stats] Could not load statistics: {exc}")
+            return stats
+        for item in resp.get("items", []):
+            s = item.get("statistics", {})
+            stats[item["id"]] = {
+                "views": int(s.get("viewCount", 0)),
+                "likes": int(s.get("likeCount", 0)),
+                "comments": int(s.get("commentCount", 0)),
+            }
+    return stats

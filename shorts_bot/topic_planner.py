@@ -44,7 +44,7 @@ def is_duplicate(subject, used_subjects):
     return False
 
 
-def pick_series(history, forced_key=None):
+def pick_series(history, forced_key=None, multipliers=None):
     if forced_key:
         for s in cfg.SERIES:
             if s["key"] == forced_key:
@@ -55,7 +55,8 @@ def pick_series(history, forced_key=None):
 
     def score(series):
         recent = sum(1 for v in window if v.get("series") == series["key"])
-        return recent / series["weight"] + random.random() * 0.3
+        factor = (multipliers or {}).get(series["key"], 1.0)
+        return recent / (series["weight"] * factor) + random.random() * 0.3
 
     candidates = [s for s in cfg.SERIES if s["key"] != last_key] or cfg.SERIES
     return min(candidates, key=score)

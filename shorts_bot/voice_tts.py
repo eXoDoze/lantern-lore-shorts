@@ -62,7 +62,7 @@ def _trim_silence(samples, threshold=0.004):
     return samples[start:end]
 
 
-def synthesize(script, work_dir):
+def synthesize(script, work_dir, lead_in=0.08, wav_name="narration.wav"):
     """Returns (wav_path, duration_seconds, timeline). timeline: list of dicts
     {scene, text, start, end} in seconds."""
     work_dir = Path(work_dir)
@@ -74,7 +74,7 @@ def synthesize(script, work_dir):
         engine = "edge"
 
     pause = np.zeros(int(cfg.PAUSE_BETWEEN_SENTENCES * SAMPLE_RATE), dtype=np.float32)
-    chunks, timeline, cursor = [np.zeros(int(0.25 * SAMPLE_RATE), dtype=np.float32)], [], 0.25
+    chunks, timeline, cursor = [np.zeros(int(lead_in * SAMPLE_RATE), dtype=np.float32)], [], lead_in
 
     for scene_idx, scene in enumerate(script["scenes"]):
         for sentence in split_sentences(scene["narration"]):
@@ -97,7 +97,7 @@ def synthesize(script, work_dir):
     full = np.concatenate(chunks)
     peak = float(np.max(np.abs(full))) or 1.0
     full = full / peak * 0.89
-    wav_path = work_dir / "narration.wav"
+    wav_path = work_dir / wav_name
     sf.write(str(wav_path), full, SAMPLE_RATE)
     duration = len(full) / SAMPLE_RATE
     print(f"[tts] Narration via {engine}: {duration:.1f}s")

@@ -6,9 +6,14 @@
 Warum: „Lantern“ (Laterne) steht für Lagerfeuer, Dunkelheit und alte Bergwege, „Lore“ für Legenden und Überlieferungen. Der Name ist kurz, gut zu merken, funktioniert international und passt zu den Appalachen genauso wie zu Folklore aus aller Welt.
 
 ## Handle (Alias)
-1. Wunsch: **@LanternLore**
-2. Falls vergeben: **@LanternLoreTales**
-3. Falls auch vergeben: **@TheLanternLore**
+Die ersten Vorschläge waren vergeben. Neue Vorschläge in dieser Reihenfolge ausprobieren (der Anzeigename bleibt trotzdem „Lantern Lore“):
+1. **@LanternLoreLegends**
+2. **@LanternLoreStories**
+3. **@LoreByLantern**
+4. **@LanternLoreArchive**
+5. **@LanternLoreHollow**
+6. **@TalesByLanternlight**
+7. **@LanternLoreDaily**
 
 ## Slogan
 *Legends whispered in the dark.*
@@ -21,7 +26,7 @@ Warum: „Lantern“ (Laterne) steht für Lagerfeuer, Dunkelheit und alte Bergwe
 >
 > New short legends every day.
 >
-> Stories are based on folklore, legends and unverified accounts and are retold for entertainment, not as proven fact. Campfire Tales are original fiction. Narration is AI-voiced; footage from Pexels.
+> Stories are based on folklore, legends and unverified accounts and are retold for entertainment, not as proven fact. Campfire Tales are original fiction. Narration is AI-voiced; stock footage from Pixabay.
 
 ## Serien, die automatisch rotieren
 | Serie | Inhalt |

@@ -16,6 +16,8 @@ from pathlib import Path
 
 from . import channel_config as cfg
 from .ambient_music import make_background
+from .channel_stats import performance_hint, refresh_statistics, series_multipliers
+from .playlist_manager import add_video as add_to_series_playlist
 from .footage_stock import fetch_clip
 from .story_writer import write_script
 from .topic_planner import find_new_topic, load_history, pick_series, save_history, uploads_today
@@ -50,8 +52,8 @@ def write_summary(lines):
             fh.write("\n".join(lines) + "\n")
 
 
-def make_one(history, series_key, upload_enabled, work_dir):
-    series = pick_series(history, series_key)
+def make_one(history, series_key, upload_enabled, work_dir, multipliers=None, hint=""):
+    series = pick_series(history, series_key, multipliers)
     print(f"[main] Series: {series['label']}")
     topic = find_new_topic(series, history)
     if topic is None:
@@ -64,7 +66,7 @@ def make_one(history, series_key, upload_enabled, work_dir):
 
     script, feedback = None, ""
     for _ in range(3):
-        script = write_script(series, topic, feedback)
+        script = write_script(series, topic, feedback, hint)
         wav, duration, timeline = synthesize(script, work_dir)
         if duration <= cfg.MAX_DURATION_SECONDS:
             break
@@ -98,6 +100,7 @@ def make_one(history, series_key, upload_enabled, work_dir):
     if upload_enabled:
         from .youtube_uploader import upload
         video_id, status = upload(out_path, script["title"], description, tags)
+        add_to_series_playlist(series["key"], video_id)
 
     entry = {
         "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -108,6 +111,10 @@ def make_one(history, series_key, upload_enabled, work_dir):
         "video_id": video_id,
         "privacy": status,
         "footage_ids": [c["id"] for c in clips],
+        # kept so the weekly compilation can re-tell the story in landscape format
+        "scenes": script["scenes"],
+        "description": script.get("description", ""),
+        "fiction": series["fiction"],
     }
     write_summary([
         f"## {script['title']}",
@@ -143,13 +150,19 @@ def main():
         print(f"[main] Already {per_day} Shorts uploaded today. Skipping.")
         return 0
 
+    multipliers, hint = None, ""
+    if upload_enabled:
+        refresh_statistics(history)
+        multipliers = series_multipliers(history)
+        hint = performance_hint(history)
+
     last_error = None
     for attempt in range(1, 4):
         work_dir = ROOT / "build" / f"attempt_{attempt}"
         shutil.rmtree(work_dir, ignore_errors=True)
         work_dir.mkdir(parents=True)
         try:
-            entry = make_one(history, args.series, upload_enabled, work_dir)
+            entry = make_one(history, args.series, upload_enabled, work_dir, multipliers, hint)
             if upload_enabled:
                 history["videos"].append(entry)
                 save_history(history)
