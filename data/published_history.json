@@ -37,7 +37,7 @@
         "likes": 0,
         "comments": 0
       },
-      "stats_date": "2026-11-26T00:50:27+00:00"
+      "stats_date": "2026-11-26T14:29:33+00:00"
     },
     {
       "date": "2026-11-25T22:59:07+00:00",
@@ -55,11 +55,11 @@
         "pixabay:1623"
       ],
       "stats": {
-        "views": 96,
-        "likes": 4,
+        "views": 486,
+        "likes": 15,
         "comments": 0
       },
-      "stats_date": "2026-11-26T00:50:27+00:00"
+      "stats_date": "2026-11-26T14:29:33+00:00"
     },
     {
       "date": "2026-11-26T01:25:57+00:00",
@@ -99,6 +99,52 @@
         }
       ],
       "description": "Explore the eerie Chilean legend of El Caleuche, a glowing phantom ship that haunts the waters of Chiloé with spectral music.",
+      "fiction": false,
+      "stats": {
+        "views": 34,
+        "likes": 1,
+        "comments": 0
+      },
+      "stats_date": "2026-11-26T14:29:33+00:00"
+    },
+    {
+      "date": "2026-11-26T14:44:42+00:00",
+      "series": "old_superstitions",
+      "subject": "The Bell Witch Cave Warning",
+      "title": "The Cursed Stones of the Bell Witch Cave",
+      "duration": 58.2,
+      "video_id": "WscsvhgSw58",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:245575",
+        "pixabay:128836",
+        "pixabay:7093",
+        "pixabay:298643",
+        "pixabay:191441"
+      ],
+      "scenes": [
+        {
+          "narration": "A single pebble from this cave will ruin your life. Deep beneath the soil of Adams, Tennessee, a mysterious spirit is said to have terrorized a family two centuries ago.",
+          "footage_query": "foggy cave entrance night"
+        },
+        {
+          "narration": "Locals say the spirit never truly left, retreating instead into the cold, damp limestone caverns. The dark air inside still feels strangely heavy.",
+          "footage_query": "dark limestone cave passage"
+        },
+        {
+          "narration": "A warning greets anyone who enters. According to legend, taking even the smallest stone from the cave brings immediate, relentless misfortune.",
+          "footage_query": "rocky cave floor darkness"
+        },
+        {
+          "narration": "Cave staff regularly receive packages filled with returned rocks. The letters inside detail sudden job losses, tragic accidents, and mysterious illnesses, begging to put the stones back.",
+          "footage_query": "old handwritten mail desk"
+        },
+        {
+          "narration": "Whatever lingers in those depths insists on keeping every piece of its home. Some shadows hold onto their treasures forever. Would you take the risk?",
+          "footage_query": "flickering lantern in cavern"
+        }
+      ],
+      "description": "Discover the eerie legend surrounding Tennessee's famous Bell Witch Cave and its cursed stones. Locals warn that removing even one small pebble brings lifelong misfortune.",
       "fiction": false
     }
   ]
