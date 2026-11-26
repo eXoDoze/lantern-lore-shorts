@@ -37,7 +37,7 @@
         "likes": 0,
         "comments": 0
       },
-      "stats_date": "2026-11-26T14:29:33+00:00"
+      "stats_date": "2026-11-26T19:41:31+00:00"
     },
     {
       "date": "2026-11-25T22:59:07+00:00",
@@ -55,11 +55,11 @@
         "pixabay:1623"
       ],
       "stats": {
-        "views": 486,
-        "likes": 15,
+        "views": 682,
+        "likes": 21,
         "comments": 0
       },
-      "stats_date": "2026-11-26T14:29:33+00:00"
+      "stats_date": "2026-11-26T19:41:31+00:00"
     },
     {
       "date": "2026-11-26T01:25:57+00:00",
@@ -101,11 +101,11 @@
       "description": "Explore the eerie Chilean legend of El Caleuche, a glowing phantom ship that haunts the waters of Chiloé with spectral music.",
       "fiction": false,
       "stats": {
-        "views": 34,
+        "views": 36,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-26T14:29:33+00:00"
+      "stats_date": "2026-11-26T19:41:31+00:00"
     },
     {
       "date": "2026-11-26T14:44:42+00:00",
@@ -145,6 +145,52 @@
         }
       ],
       "description": "Discover the eerie legend surrounding Tennessee's famous Bell Witch Cave and its cursed stones. Locals warn that removing even one small pebble brings lifelong misfortune.",
+      "fiction": false,
+      "stats": {
+        "views": 27,
+        "likes": 1,
+        "comments": 0
+      },
+      "stats_date": "2026-11-26T19:41:31+00:00"
+    },
+    {
+      "date": "2026-11-26T19:55:23+00:00",
+      "series": "cryptids",
+      "subject": "The Kelly-Hopkinsville Goblins",
+      "title": "The Kentucky Farmhouse Siege",
+      "duration": 58.2,
+      "video_id": "P9kA4IIw3Kk",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:2334",
+        "pixabay:694",
+        "pixabay:120667",
+        "pixabay:46906",
+        "pixabay:217105"
+      ],
+      "scenes": [
+        {
+          "narration": "Bullets reportedly made a metallic clinging sound against their bodies, according to the frightened witnesses.",
+          "footage_query": "dark farmhouse exterior"
+        },
+        {
+          "narration": "It was August of nineteen fifty-five in rural Kentucky when a farmhouse was reportedly besieged for hours. According to the terrified residents, small silver humanoids with glowing eyes emerged from the darkness.",
+          "footage_query": "creepy rural night"
+        },
+        {
+          "narration": "Witnesses claimed these strange visitors floated just above the ground with their hands raised. Every time the family fired their shotguns, the creatures were said to shrug off the blasts and vanish back into the night.",
+          "footage_query": "foggy cornfield night"
+        },
+        {
+          "narration": "Police later searched the property, finding strange luminous traces in the trees and unexplained impressions in the soft dirt, fueling the enduring legend.",
+          "footage_query": "flashlight in woods"
+        },
+        {
+          "narration": "Whatever reportedly visited that farmhouse left behind a legacy of absolute dread. Would you have opened the door?",
+          "footage_query": "dark country window"
+        }
+      ],
+      "description": "A farmhouse in nineteen fifty five Kentucky was allegedly besieged by silver humanoids. Explore this classic American cryptid encounter.",
       "fiction": false
     }
   ]
