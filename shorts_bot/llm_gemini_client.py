@@ -16,6 +16,7 @@ API_ROOT = "https://generativelanguage.googleapis.com/v1beta"
 EXCLUDED_WORDS = ("image", "tts", "audio", "live", "embedding", "vision", "robotics", "computer-use", "native")
 
 _cached_models = None
+_exhausted = set()   # models that answered 429 (quota) during this run -> skipped afterwards
 
 
 def _api_key():
@@ -101,33 +102,47 @@ def generate_json(prompt, system=None, temperature=0.9):
         body["systemInstruction"] = {"parts": [{"text": system}]}
 
     last_error = None
-    for model in list_candidate_models():
-        for attempt in range(3):
+    candidates = [m for m in list_candidate_models() if m not in _exhausted] or list_candidate_models()
+    for model in candidates:
+        for attempt in range(2):
+            started = time.time()
             try:
                 resp = requests.post(
                     f"{API_ROOT}/models/{model}:generateContent",
                     params={"key": _api_key()},
                     json=body,
-                    timeout=120,
+                    timeout=90,
                 )
                 if resp.status_code in (404, 400) and "not found" in resp.text.lower():
                     last_error = f"{model}: not available"
+                    _exhausted.add(model)
                     break  # next model
-                if resp.status_code in (429, 500, 502, 503, 504):
+                if resp.status_code == 429:
+                    # free-tier quota of this model used up -> do not wait, use the next model
+                    last_error = f"{model}: HTTP 429 (quota)"
+                    print(f"[llm] {model}: quota reached, switching model")
+                    _exhausted.add(model)
+                    break
+                if resp.status_code in (500, 502, 503, 504):
                     last_error = f"{model}: HTTP {resp.status_code}"
-                    time.sleep(15 * (attempt + 1))
+                    print(f"[llm] {model}: HTTP {resp.status_code}, retrying shortly")
+                    time.sleep(5)
                     continue
                 resp.raise_for_status()
                 data = resp.json()
                 parts = data["candidates"][0]["content"]["parts"]
                 text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
-                return _extract_json(text)
+                result = _extract_json(text)
+                print(f"[llm] {model} answered in {time.time() - started:.0f}s")
+                return result
             except (KeyError, IndexError, json.JSONDecodeError) as exc:
                 last_error = f"{model}: unusable answer ({exc})"
-                time.sleep(3)
+                print(f"[llm] {last_error}")
+                time.sleep(2)
                 continue
             except requests.RequestException as exc:
                 last_error = f"{model}: {exc}"
+                print(f"[llm] {model}: network problem ({exc.__class__.__name__})")
                 time.sleep(5)
                 continue
     raise RuntimeError(f"All Gemini models failed. Last error: {last_error}")

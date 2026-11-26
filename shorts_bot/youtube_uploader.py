@@ -130,20 +130,33 @@ def create_playlist(title, description):
 
 
 def add_to_playlist(playlist_id, video_id):
-    try:
-        get_client().playlistItems().insert(part="snippet", body={
-            "snippet": {"playlistId": playlist_id, "resourceId": {"kind": "youtube#video", "videoId": video_id}},
-        }).execute()
-        print(f"[playlist] Added {video_id} to {playlist_id}")
-        return "ok"
-    except HttpError as exc:
-        if exc.resp.status == 404:
-            return "notfound"
-        if _permission_problem(exc):
-            print("::warning::Playlist skipped - the refresh token lacks the 'youtube' permission (see README).")
-        else:
+    # right after creating a playlist or uploading, YouTube sometimes answers 409/503
+    # ("operation was aborted") for a few seconds -> wait and retry
+    for attempt in range(4):
+        try:
+            get_client().playlistItems().insert(part="snippet", body={
+                "snippet": {"playlistId": playlist_id, "resourceId": {"kind": "youtube#video", "videoId": video_id}},
+            }).execute()
+            print(f"[playlist] Added {video_id} to {playlist_id}")
+            return "ok"
+        except HttpError as exc:
+            if exc.resp.status == 404:
+                return "notfound"
+            if _permission_problem(exc):
+                print("::warning::Playlist skipped - the refresh token lacks the 'youtube' permission (see README).")
+                return "error"
+            if exc.resp.status in (409, 500, 503) and attempt < 3:
+                time.sleep(10 * (attempt + 1))
+                continue
             print(f"[playlist] Could not add video: {exc}")
-        return "error"
+            return "error"
+        except NETWORK_ERRORS as exc:
+            if attempt < 3:
+                time.sleep(10)
+                continue
+            print(f"[playlist] Could not add video: {exc}")
+            return "error"
+    return "error"
 
 
 def set_thumbnail(video_id, image_path):

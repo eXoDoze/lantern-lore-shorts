@@ -66,6 +66,7 @@ jobs:
           SHORTS_PER_DAY: ${{ vars.SHORTS_PER_DAY }}
           LL_PAUSED: ${{ vars.LL_PAUSED }}
           KOKORO_MODEL_DIR: models/kokoro
+          PYTHONUNBUFFERED: "1"
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.upload }}" = "true" ]; then
             python -m shorts_bot.weekly_compilation

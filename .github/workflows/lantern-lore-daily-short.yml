@@ -73,6 +73,7 @@ jobs:
           LL_PAUSED: ${{ vars.LL_PAUSED }}
           FORCE_SERIES: ${{ github.event.inputs.series }}
           KOKORO_MODEL_DIR: models/kokoro
+          PYTHONUNBUFFERED: "1"
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.upload }}" = "true" ]; then
             python -m shorts_bot.run_pipeline

@@ -16,9 +16,10 @@ EDGE_TTS_VOICE = "en-GB-RyanNeural"
 PAUSE_BETWEEN_SENTENCES = 0.28  # seconds
 
 # ---------------------------------------------------------------- length
-MIN_WORDS = 95
-MAX_WORDS = 135
+MIN_WORDS = 115
+MAX_WORDS = 140
 MAX_DURATION_SECONDS = 58.5     # Shorts target: 15-60 s
+MIN_DURATION_SECONDS = 42.0     # shorter narration is rewritten longer
 MAX_SPEEDUP = 1.12              # audio may be sped up at most by this factor to fit
 
 # ---------------------------------------------------------------- upload

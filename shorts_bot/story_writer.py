@@ -51,7 +51,8 @@ Region: {topic['region']}
 
 {truth_rules}
 
-Length: {cfg.MIN_WORDS}-{cfg.MAX_WORDS} words of narration in total (about 45-57 seconds spoken).
+Length: {cfg.MIN_WORDS}-{cfg.MAX_WORDS} words of narration in total (about 48-57 seconds spoken).
+Count your words - drafts under {cfg.MIN_WORDS} words are rejected.
 Structure: 4 to 6 scenes. Scene 1 = hook.
 {HOOK_RULES}
 Ending: the last scene ends with an eerie closing line, followed by ONE short question to the viewer
@@ -119,7 +120,7 @@ def write_script(series, topic, feedback="", performance_hint=""):
         if words > cfg.MAX_WORDS + 15:
             feedback = f"Your previous draft had {words} words - far too long. Stay under {cfg.MAX_WORDS} words."
             continue
-        if words < cfg.MIN_WORDS - 25:
+        if words < cfg.MIN_WORDS - 8:
             feedback = f"Your previous draft had only {words} words. Write at least {cfg.MIN_WORDS} words."
             continue
         if not series["fiction"]:

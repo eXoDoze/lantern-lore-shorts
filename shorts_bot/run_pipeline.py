@@ -8,6 +8,7 @@ Usage:
 
 import argparse
 import os
+import time
 import shutil
 import sys
 import traceback
@@ -68,6 +69,11 @@ def make_one(history, series_key, upload_enabled, work_dir, multipliers=None, hi
     for _ in range(3):
         script = write_script(series, topic, feedback, hint)
         wav, duration, timeline = synthesize(script, work_dir)
+        if duration < cfg.MIN_DURATION_SECONDS:
+            feedback = (f"The previous version took only {duration:.0f} seconds to read - too short. "
+                        f"Write {cfg.MIN_WORDS + 10}-{cfg.MAX_WORDS} words.")
+            print(f"[main] Narration too short ({duration:.1f}s), rewriting longer")
+            continue
         if duration <= cfg.MAX_DURATION_SECONDS:
             break
         factor = duration / cfg.MAX_DURATION_SECONDS
@@ -77,7 +83,10 @@ def make_one(history, series_key, upload_enabled, work_dir, multipliers=None, hi
         feedback = f"The previous version took {duration:.0f} seconds to read - it must be clearly shorter (max {cfg.MAX_WORDS - 15} words)."
         print(f"[main] Narration too long ({duration:.1f}s), rewriting shorter")
     else:
-        raise RuntimeError("Narration stayed too long after 3 attempts.")
+        if duration < cfg.MIN_DURATION_SECONDS and duration >= 25:
+            print(f"[main] Keeping the shorter version ({duration:.1f}s) after 3 attempts")
+        else:
+            raise RuntimeError("Narration length stayed outside the target after 3 attempts.")
 
     used_ids = set()
     for v in history["videos"][-300:]:
