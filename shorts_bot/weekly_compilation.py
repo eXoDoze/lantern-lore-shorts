@@ -33,7 +33,7 @@ OUTPUT_DIR = ROOT / "output"
 W, H = 1920, 1080
 MIN_STORIES = 6
 MAX_STORIES = 12
-LOOKBACK_DAYS = 28
+LOOKBACK_DAYS = 42
 CARD_SECONDS = 3.0
 
 
@@ -54,7 +54,21 @@ def _timestamp(seconds):
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
 
 
+# Series that fit together in one long video. Each week the group with the most
+# not-yet-compiled stories wins, so every theme gets its turn.
+THEME_GROUPS = [
+    {"key": "appalachian", "series": ["appalachian"], "theme": "Appalachian legends and mountain folklore"},
+    {"key": "cryptids", "series": ["cryptids"], "theme": "cryptid sightings and strange creatures"},
+    {"key": "haunted_unexplained", "series": ["haunted_places", "unexplained_history"],
+     "theme": "haunted places and unexplained historical mysteries"},
+    {"key": "folklore_superstitions", "series": ["world_folklore", "old_superstitions"],
+     "theme": "folklore and old superstitions from around the world"},
+    {"key": "campfire", "series": ["campfire_tales"], "theme": "original campfire horror stories (fiction)"},
+]
+
+
 def pick_stories(history):
+    """Returns (stories, theme_text). Prefers one theme group; mixed only as fallback."""
     compiled = {vid for c in history.get("compilations", []) for vid in c.get("video_ids", [])}
     now = datetime.now(timezone.utc)
     pool = []
@@ -65,14 +79,29 @@ def pick_stories(history):
             continue
         if v.get("scenes") and v.get("video_id") and v["video_id"] not in compiled and age <= timedelta(days=LOOKBACK_DAYS):
             pool.append(v)
+
+    last_group = (history.get("compilations") or [{}])[-1].get("theme_group")
+    best = None
+    for g in THEME_GROUPS:
+        members = [v for v in pool if v.get("series") in g["series"]]
+        # small bonus for a different theme than last week, so themes alternate
+        rank = len(members) + (0 if g["key"] != last_group else -3)
+        if len(members) >= MIN_STORIES and (best is None or rank > best[0]):
+            best = (rank, g, members)
+    if best:
+        _, group, members = best
+        members.sort(key=_score, reverse=True)
+        print(f"[weekly] Theme of the week: {group['theme']} ({len(members)} stories available)")
+        return members[:MAX_STORIES], group
     pool.sort(key=_score, reverse=True)
-    return pool[:MAX_STORIES]
+    print("[weekly] No theme has enough stories yet - using a mixed collection")
+    return pool[:MAX_STORIES], {"key": "mixed", "theme": "a mix of legends, folklore and eerie tales"}
 
 
-def plan_texts(stories):
+def plan_texts(stories, group):
     titles = "\n".join(f"- {s['title']}" for s in stories)
     prompt = f"""You write for the YouTube channel "{cfg.CHANNEL_NAME}" ({cfg.CHANNEL_TAGLINE}).
-This week's long video collects these {len(stories)} short legends into one calm storytelling session
+This week's long video collects these {len(stories)} stories about {group['theme']} into one calm storytelling session
 that people listen to in the evening or to fall asleep:
 {titles}
 
@@ -171,12 +200,12 @@ Dialogue: 0,0:00:00.00,0:00:05.00,Big,,0,0,0,,{_clean(text).upper()}
 
 
 def build(history, upload_enabled):
-    stories = pick_stories(history)
+    stories, group = pick_stories(history)
     if len(stories) < MIN_STORIES:
         print(f"[weekly] Only {len(stories)} new stories available (need {MIN_STORIES}). Skipping this week.")
         return None
     print(f"[weekly] Building compilation with {len(stories)} stories")
-    texts = plan_texts(stories)
+    texts = plan_texts(stories, group)
 
     work = ROOT / "build" / "weekly"
     shutil.rmtree(work, ignore_errors=True)
@@ -241,7 +270,7 @@ def build(history, upload_enabled):
     tags = list(dict.fromkeys([str(t)[:40] for t in texts.get("tags", [])] + ["legends", "folklore", "sleep stories"]))[:15]
 
     entry = {"date": datetime.now(timezone.utc).isoformat(timespec="seconds"), "title": texts["title"],
-             "video_ids": [s["video_id"] for s in stories], "duration_min": round(total / 60, 1), "youtube_id": None}
+             "video_ids": [s["video_id"] for s in stories], "theme_group": group["key"], "duration_min": round(total / 60, 1), "youtube_id": None}
     if upload_enabled:
         from .youtube_uploader import set_thumbnail, upload
         vid, _ = upload(final, texts["title"], description, tags)
