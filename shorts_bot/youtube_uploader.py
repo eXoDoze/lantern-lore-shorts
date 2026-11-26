@@ -6,7 +6,11 @@ extras are skipped with a warning and uploading keeps working.
 """
 
 import os
+import socket
+import ssl
 import time
+
+import httplib2
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -19,9 +23,12 @@ from . import channel_config as cfg
 _client_cache = None
 
 
-def get_client():
+def get_client(fresh=False):
+    """fresh=True builds a new client with a new network connection. Used before uploads:
+    a connection opened earlier (e.g. for statistics) is often closed by Google during the
+    minutes of rendering, which then fails with SSLEOFError."""
     global _client_cache
-    if _client_cache is not None:
+    if _client_cache is not None and not fresh:
         return _client_cache
     missing = [k for k in ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN") if not os.environ.get(k)]
     if missing:
@@ -43,8 +50,36 @@ def _permission_problem(exc):
     return isinstance(exc, HttpError) and exc.resp.status in (401, 403)
 
 
+NETWORK_ERRORS = (ssl.SSLError, ConnectionError, socket.timeout, TimeoutError, OSError,
+                  httplib2.HttpLib2Error)
+
+
+def _upload_once(video_path, body):
+    youtube = get_client(fresh=True)
+    media = MediaFileUpload(str(video_path), mimetype="video/mp4", chunksize=4 * 1024 * 1024, resumable=True)
+    request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
+    response, retries = None, 0
+    while response is None:
+        try:
+            # num_retries makes the client library itself retry short network hiccups
+            _, response = request.next_chunk(num_retries=5)
+        except HttpError as exc:
+            if exc.resp.status in (500, 502, 503, 504) and retries < 6:
+                retries += 1
+                time.sleep(10 * retries)
+                continue
+            raise
+        except NETWORK_ERRORS as exc:
+            if retries < 6:
+                retries += 1
+                print(f"[upload] Connection problem ({exc.__class__.__name__}), resuming in {10 * retries}s ...")
+                time.sleep(10 * retries)
+                continue
+            raise
+    return response
+
+
 def upload(video_path, title, description, tags, category_id=None):
-    youtube = get_client()
     body = {
         "snippet": {
             "title": title[:100],
@@ -60,19 +95,21 @@ def upload(video_path, title, description, tags, category_id=None):
             "containsSyntheticMedia": cfg.DECLARE_SYNTHETIC_MEDIA,
         },
     }
-    media = MediaFileUpload(str(video_path), mimetype="video/mp4", chunksize=8 * 1024 * 1024, resumable=True)
-    request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
-
-    response, retries = None, 0
-    while response is None:
+    # Upload the SAME finished video up to 3 times before giving up - never re-create the video for this.
+    last_exc = None
+    for attempt in range(1, 4):
         try:
-            _, response = request.next_chunk()
-        except HttpError as exc:
-            if exc.resp.status in (500, 502, 503, 504) and retries < 5:
-                retries += 1
-                time.sleep(10 * retries)
-                continue
+            response = _upload_once(video_path, body)
+            break
+        except HttpError:
             raise
+        except NETWORK_ERRORS as exc:
+            last_exc = exc
+            print(f"[upload] Upload attempt {attempt} failed ({exc.__class__.__name__}); starting a fresh upload in 30s")
+            time.sleep(30)
+    else:
+        raise RuntimeError(f"Upload failed after 3 attempts: {last_exc}")
+
     video_id = response["id"]
     status = response.get("status", {}).get("privacyStatus")
     print(f"[upload] Uploaded https://youtube.com/watch?v={video_id} (status: {status})")

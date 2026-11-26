@@ -174,6 +174,9 @@ def main():
             print(f"[main] Attempt {attempt} failed: {exc}")
             if "Missing GitHub secrets" in str(exc) or "is missing" in str(exc):
                 break
+            if "Upload failed" in str(exc):
+                # the video itself was fine - making a new one would not help
+                break
     print(f"::error::No Short could be produced: {last_error}")
     return 1
 
