@@ -61,7 +61,7 @@ def set_short_thumbnail(video_id, work_dir, title, series_label):
     """Custom cover image for the Short, so the channel grid shows a fixed, readable title
     instead of a random frame. If YouTube refuses (channel not eligible yet), the bot only
     tries again every 14 days to save time."""
-    from .video_renderer import make_short_thumbnail
+    from .video_renderer import brightest_scene, make_short_thumbnail
     from .youtube_uploader import set_thumbnail, wait_until_processed
     state = _load_state()
     retry_after = state.get("short_thumbnail_retry_after")
@@ -70,7 +70,7 @@ def set_short_thumbnail(video_id, work_dir, title, series_label):
         return
     try:
         thumb = Path(work_dir) / "short_thumbnail.jpg"
-        make_short_thumbnail(Path(work_dir) / "scene_0.mp4", title, series_label, thumb, work_dir)
+        make_short_thumbnail(brightest_scene(work_dir), title, series_label, thumb, work_dir)
         if not wait_until_processed(video_id):
             return
         if set_thumbnail(video_id, thumb):

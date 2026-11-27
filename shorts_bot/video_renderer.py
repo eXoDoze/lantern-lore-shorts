@@ -200,3 +200,20 @@ Dialogue: 0,0:00:00.00,0:00:05.00,Brand,,0,0,0,,LANTERN LORE
           "-vf", f"scale=1080:1920,eq=brightness=-0.08,vignette=PI/3.5,ass='{ass_arg}':fontsdir='{font_arg}'",
           "-q:v", "3", str(out_path)])
     return out_path
+
+
+def brightest_scene(work_dir):
+    """Path of the scene clip with the most visible picture (better cover than a nearly black frame)."""
+    import numpy as np
+    best, best_val = None, -1.0
+    for scene in sorted(Path(work_dir).glob("scene_*.mp4")):
+        try:
+            raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-ss", "1.0", "-i", str(scene), "-frames:v", "1",
+                                  "-vf", "scale=27:48,format=gray", "-f", "rawvideo", "-"],
+                                 check=True, capture_output=True).stdout
+            val = float(np.frombuffer(raw, dtype=np.uint8).mean()) if raw else -1.0
+        except (subprocess.CalledProcessError, ValueError):
+            continue
+        if val > best_val:
+            best, best_val = scene, val
+    return best or Path(work_dir) / "scene_0.mp4"
