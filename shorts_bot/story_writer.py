@@ -105,41 +105,101 @@ Return JSON: {{"problems_found": ["..."], "scenes": [{{"narration": "...", "foot
     return script
 
 
-def _valid(script):
+def _normalize(script):
+    """Repairs small format slips of the model instead of throwing the whole draft away.
+    Returns None only if the draft is really unusable (no scenes / no text / no title)."""
+    if isinstance(script, list) and script and isinstance(script[0], dict):
+        script = script[0]
     if not isinstance(script, dict):
-        return False
+        return None
     scenes = script.get("scenes")
-    if not isinstance(scenes, list) or not 3 <= len(scenes) <= 7:
-        return False
+    if not isinstance(scenes, list):
+        return None
+    fixed = []
     for s in scenes:
-        if not isinstance(s, dict) or not s.get("narration"):
-            return False
-        queries = s.get("footage_queries") or ([s["footage_query"]] if s.get("footage_query") else [])
-        queries = [q for q in queries if isinstance(q, str) and q.strip()]
-        if not queries:
-            return False
-        s["footage_queries"] = queries[:3]
-        s["footage_query"] = queries[0]
-    return bool(script.get("title"))
+        if isinstance(s, str):
+            s = {"narration": s}
+        if not isinstance(s, dict) or not str(s.get("narration", "")).strip():
+            continue
+        queries = s.get("footage_queries") or s.get("footage_query") or []
+        if isinstance(queries, str):
+            queries = [queries]
+        queries = [q.strip() for q in queries if isinstance(q, str) and q.strip()] or ["dark forest night"]
+        fixed.append({"narration": str(s["narration"]).strip(), "footage_queries": queries[:3], "footage_query": queries[0]})
+    if len(fixed) < 2:
+        return None
+    if len(fixed) > 8:  # merge surplus scenes into the last one
+        extra = " ".join(f["narration"] for f in fixed[7:])
+        fixed = fixed[:7]
+        fixed[-1]["narration"] += " " + extra
+    script["scenes"] = fixed
+    if not str(script.get("title", "")).strip():
+        script["title"] = fixed[0]["narration"].split(".")[0][:60]
+    return script
+
+
+def _expand(script, words):
+    """Asks the model to lengthen an existing draft (more reliable than rewriting from scratch)."""
+    prompt = f"""This YouTube Short narration has only {words} words but needs {cfg.MIN_WORDS}-{cfg.MAX_WORDS}.
+Expand it to about {cfg.MIN_WORDS + 10} words: add atmosphere, sensory detail and tension inside the existing
+scenes. Keep the same number of scenes, the same facts, the opening hook and the closing question.
+
+Script JSON:
+{script}
+
+Return the same JSON structure with the longer narration."""
+    try:
+        longer = _normalize(generate_json(prompt, system=SYSTEM, temperature=0.7))
+        if longer and len(longer["scenes"]) == len(script["scenes"]):
+            for new, old in zip(longer["scenes"], script["scenes"]):
+                new["footage_queries"], new["footage_query"] = old["footage_queries"], old["footage_query"]
+            return longer
+    except Exception as exc:  # noqa: BLE001
+        print(f"[writer] Expanding failed ({exc})")
+    return script
+
+
+def _finish(script, series, topic):
+    if not series["fiction"]:
+        script = _fact_check(script, topic)
+    script["title"] = re.sub(r"[#<>]", "", str(script["title"])).strip()[:95]
+    script["tags"] = [str(t)[:40] for t in script.get("tags", [])][:15]
+    print(f"[writer] Script ready: '{script['title']}' ({word_count(full_narration(script))} words)")
+    return script
 
 
 def write_script(series, topic, feedback="", performance_hint=""):
+    best = None
     for attempt in range(3):
-        script = generate_json(_script_prompt(series, topic, feedback, performance_hint), system=SYSTEM, temperature=0.9)
-        if not _valid(script):
-            print("[writer] Invalid script structure, retrying.")
+        try:
+            raw = generate_json(_script_prompt(series, topic, feedback, performance_hint), system=SYSTEM, temperature=0.9)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[writer] Draft {attempt + 1}: no answer ({exc})")
+            continue
+        script = _normalize(raw)
+        if not script:
+            print(f"[writer] Draft {attempt + 1}: unusable structure, retrying")
             continue
         words = word_count(full_narration(script))
+        if words < cfg.MIN_WORDS - 8:
+            print(f"[writer] Draft {attempt + 1}: only {words} words -> expanding")
+            script = _expand(script, words)
+            words = word_count(full_narration(script))
         if words > cfg.MAX_WORDS + 15:
+            print(f"[writer] Draft {attempt + 1}: {words} words, too long -> rewriting")
             feedback = f"Your previous draft had {words} words - far too long. Stay under {cfg.MAX_WORDS} words."
+            if best is None or abs(words - cfg.MAX_WORDS) < abs(best[0] - cfg.MAX_WORDS):
+                best = (words, script)
             continue
         if words < cfg.MIN_WORDS - 8:
+            print(f"[writer] Draft {attempt + 1}: still only {words} words -> rewriting")
             feedback = f"Your previous draft had only {words} words. Write at least {cfg.MIN_WORDS} words."
+            if best is None or words > best[0]:
+                best = (words, script)
             continue
-        if not series["fiction"]:
-            script = _fact_check(script, topic)
-        script["title"] = re.sub(r"[#<>]", "", script["title"]).strip()[:95]
-        script["tags"] = [str(t)[:40] for t in script.get("tags", [])][:15]
-        print(f"[writer] Script ready: '{script['title']}' ({word_count(full_narration(script))} words)")
-        return script
+        return _finish(script, series, topic)
+    # Never give up on a usable draft: the length check after the voice recording decides the rest.
+    if best and 70 <= best[0] <= cfg.MAX_WORDS + 40:
+        print(f"[writer] Using best draft ({best[0]} words) after 3 attempts")
+        return _finish(best[1], series, topic)
     raise RuntimeError("Could not produce a valid script.")
