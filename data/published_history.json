@@ -37,7 +37,7 @@
         "likes": 0,
         "comments": 0
       },
-      "stats_date": "2026-11-27T00:17:53+00:00"
+      "stats_date": "2026-11-27T14:27:11+00:00"
     },
     {
       "date": "2026-11-25T22:59:07+00:00",
@@ -55,11 +55,11 @@
         "pixabay:1623"
       ],
       "stats": {
-        "views": 928,
-        "likes": 20,
+        "views": 1064,
+        "likes": 24,
         "comments": 0
       },
-      "stats_date": "2026-11-27T00:17:53+00:00"
+      "stats_date": "2026-11-27T14:27:11+00:00"
     },
     {
       "date": "2026-11-26T01:25:57+00:00",
@@ -101,11 +101,11 @@
       "description": "Explore the eerie Chilean legend of El Caleuche, a glowing phantom ship that haunts the waters of Chiloé with spectral music.",
       "fiction": false,
       "stats": {
-        "views": 43,
+        "views": 44,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-27T00:17:53+00:00"
+      "stats_date": "2026-11-27T14:27:11+00:00"
     },
     {
       "date": "2026-11-26T14:44:42+00:00",
@@ -147,11 +147,11 @@
       "description": "Discover the eerie legend surrounding Tennessee's famous Bell Witch Cave and its cursed stones. Locals warn that removing even one small pebble brings lifelong misfortune.",
       "fiction": false,
       "stats": {
-        "views": 37,
+        "views": 54,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-27T00:17:53+00:00"
+      "stats_date": "2026-11-27T14:27:11+00:00"
     },
     {
       "date": "2026-11-26T19:55:23+00:00",
@@ -193,11 +193,11 @@
       "description": "A farmhouse in nineteen fifty five Kentucky was allegedly besieged by silver humanoids. Explore this classic American cryptid encounter.",
       "fiction": false,
       "stats": {
-        "views": 24,
-        "likes": 2,
+        "views": 77,
+        "likes": 3,
         "comments": 0
       },
-      "stats_date": "2026-11-27T00:17:53+00:00"
+      "stats_date": "2026-11-27T14:27:11+00:00"
     },
     {
       "date": "2026-11-27T00:23:00+00:00",
@@ -232,6 +232,52 @@
         }
       ],
       "description": "Deep within Romania lies Hoia Baciu, a forest famous for crooked trees and lost time. Explore the eerie legends surrounding Transylvania's most haunted woods.",
+      "fiction": false,
+      "stats": {
+        "views": 39,
+        "likes": 3,
+        "comments": 0
+      },
+      "stats_date": "2026-11-27T14:27:11+00:00"
+    },
+    {
+      "date": "2026-11-27T14:32:58+00:00",
+      "series": "world_folklore",
+      "subject": "The Mapinguari Beast of the Amazon",
+      "title": "The Amazon's Terrifying Mapinguari",
+      "duration": 58.2,
+      "video_id": "K3XZNwOicKw",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:221948",
+        "pixabay:56477",
+        "pixabay:221333",
+        "pixabay:183638",
+        "pixabay:209659"
+      ],
+      "scenes": [
+        {
+          "narration": "Deep in the Amazon, strange circular footprints scar the forest floor. Hunters speak of a massive beast that wanders the rainforest, leaving terrifying signs of its presence.",
+          "footage_query": "dense tropical rainforest night"
+        },
+        {
+          "narration": "According to Brazilian legend, this is the Mapinguari. Locals describe a towering giant covered in matted red fur, tough enough to stop arrows. It wanders the dense jungle, snapping thick branches like twigs.",
+          "footage_query": "amazon jungle mist morning"
+        },
+        {
+          "narration": "Its howl sounds like a human screaming in the dark. Even stranger, legends claim the creature has a second mouth in its stomach that devours anything in its path.",
+          "footage_query": "dark muddy forest path"
+        },
+        {
+          "narration": "Before it appears, a foul stench fills the humid air. When every bird and insect stops making sound, the monster is near.",
+          "footage_query": "eerie moonlit jungle leaves"
+        },
+        {
+          "narration": "Some believe it is a giant sloth that survived from ancient times. The jungle hides many terrifying secrets. Would you venture into these woods?",
+          "footage_query": "misty amazon river night"
+        }
+      ],
+      "description": "Deep within the Brazilian rainforest, legends speak of the Mapinguari, a terrifying giant with backwards feet. Explore the eerie folklore of South America's most mysterious jungle creature.",
       "fiction": false
     }
   ]
