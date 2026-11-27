@@ -16,7 +16,8 @@ API_ROOT = "https://generativelanguage.googleapis.com/v1beta"
 EXCLUDED_WORDS = ("image", "tts", "audio", "live", "embedding", "vision", "robotics", "computer-use", "native")
 
 _cached_models = None
-_exhausted = set()   # models that answered 429 (quota) during this run -> skipped afterwards
+_exhausted = set()   # models that failed (quota, timeout, error) during this run -> skipped afterwards
+_working = None      # last model that answered -> tried first next time (saves minutes per run)
 
 
 def _api_key():
@@ -101,8 +102,12 @@ def generate_json(prompt, system=None, temperature=0.9):
     if system:
         body["systemInstruction"] = {"parts": [{"text": system}]}
 
+    global _working
     last_error = None
-    candidates = [m for m in list_candidate_models() if m not in _exhausted] or list_candidate_models()
+    ordered = list_candidate_models()
+    if _working and _working in ordered:
+        ordered = [_working] + [m for m in ordered if m != _working]
+    candidates = [m for m in ordered if m not in _exhausted] or ordered
     for model in candidates:
         for attempt in range(2):
             started = time.time()
@@ -111,12 +116,8 @@ def generate_json(prompt, system=None, temperature=0.9):
                     f"{API_ROOT}/models/{model}:generateContent",
                     params={"key": _api_key()},
                     json=body,
-                    timeout=90,
+                    timeout=(10, 45),
                 )
-                if resp.status_code in (404, 400) and "not found" in resp.text.lower():
-                    last_error = f"{model}: not available"
-                    _exhausted.add(model)
-                    break  # next model
                 if resp.status_code == 429:
                     # free-tier quota of this model used up -> do not wait, use the next model
                     last_error = f"{model}: HTTP 429 (quota)"
@@ -125,24 +126,41 @@ def generate_json(prompt, system=None, temperature=0.9):
                     break
                 if resp.status_code in (500, 502, 503, 504):
                     last_error = f"{model}: HTTP {resp.status_code}"
-                    print(f"[llm] {model}: HTTP {resp.status_code}, retrying shortly")
-                    time.sleep(5)
-                    continue
-                resp.raise_for_status()
+                    if attempt == 0:
+                        print(f"[llm] {model}: HTTP {resp.status_code} (overloaded), one more try")
+                        time.sleep(4)
+                        continue
+                    print(f"[llm] {model}: still overloaded, switching model")
+                    _exhausted.add(model)
+                    break
+                if resp.status_code >= 400:
+                    # 400/403/404: model retired or not available on the free tier -> never retry it
+                    last_error = f"{model}: HTTP {resp.status_code}"
+                    print(f"[llm] {model}: not usable (HTTP {resp.status_code}), switching model")
+                    _exhausted.add(model)
+                    break
                 data = resp.json()
                 parts = data["candidates"][0]["content"]["parts"]
                 text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
                 result = _extract_json(text)
                 print(f"[llm] {model} answered in {time.time() - started:.0f}s")
+                _working = model
                 return result
             except (KeyError, IndexError, json.JSONDecodeError) as exc:
                 last_error = f"{model}: unusable answer ({exc})"
                 print(f"[llm] {last_error}")
-                time.sleep(2)
+                time.sleep(1)
                 continue
+            except requests.Timeout:
+                last_error = f"{model}: too slow"
+                print(f"[llm] {model}: no answer within 45s, switching model")
+                _exhausted.add(model)
+                break
             except requests.RequestException as exc:
                 last_error = f"{model}: {exc}"
                 print(f"[llm] {model}: network problem ({exc.__class__.__name__})")
-                time.sleep(5)
+                time.sleep(3)
                 continue
+        if _working == model and model in _exhausted:
+            _working = None
     raise RuntimeError(f"All Gemini models failed. Last error: {last_error}")
