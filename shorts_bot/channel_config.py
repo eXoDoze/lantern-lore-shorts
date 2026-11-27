@@ -13,7 +13,7 @@ KOKORO_LANG = "en-gb"          # "en-gb" for bm_/bf_ voices, "en-us" for am_/af_
 VOICE_SPEED = 0.95
 # Fallback voice if Kokoro fails (Microsoft Edge online voices, free)
 EDGE_TTS_VOICE = "en-GB-RyanNeural"
-PAUSE_BETWEEN_SENTENCES = 0.28  # seconds
+PAUSE_BETWEEN_SCENES = 0.45     # seconds; pauses inside a scene come naturally from the voice
 
 # ---------------------------------------------------------------- length
 MIN_WORDS = 115

@@ -62,9 +62,56 @@ def _trim_silence(samples, threshold=0.004):
     return samples[start:end]
 
 
+def _speech_gaps(samples, min_gap=0.09):
+    """Midpoints (in seconds) of the silent gaps inside a recording."""
+    frame = int(0.01 * SAMPLE_RATE)
+    n = len(samples) // frame
+    if n == 0:
+        return []
+    rms = np.sqrt(np.mean(samples[: n * frame].reshape(n, frame) ** 2, axis=1))
+    silent = rms < max(float(np.max(rms)) * 0.04, 1e-4)
+    gaps, run_start = [], None
+    for i, is_silent in enumerate(silent):
+        if is_silent and run_start is None:
+            run_start = i
+        elif not is_silent and run_start is not None:
+            if (i - run_start) * 0.01 >= min_gap:
+                gaps.append((run_start + i) / 2 * 0.01)
+            run_start = None
+    return gaps
+
+
+def _sentence_spans(sentences, samples):
+    """Estimates start/end of every sentence inside one recording of a whole scene.
+    Uses the real pauses in the audio where possible, character proportions otherwise."""
+    total = len(samples) / SAMPLE_RATE
+    if len(sentences) == 1:
+        return [(0.0, total)]
+    weights = [len(s) + 8 for s in sentences]
+    expected, acc = [], 0
+    for w in weights[:-1]:
+        acc += w
+        expected.append(total * acc / sum(weights))
+    gaps = _speech_gaps(samples)
+    bounds, last = [], 0.0
+    for exp in expected:
+        options = [g for g in gaps if g > last + 0.3]
+        best = min(options, key=lambda g: abs(g - exp), default=None)
+        if best is not None and abs(best - exp) < max(1.2, 0.25 * total):
+            bounds.append(best)
+        else:
+            bounds.append(max(exp, last + 0.3))
+        last = bounds[-1]
+    edges = [0.0] + bounds + [total]
+    return [(edges[i], edges[i + 1]) for i in range(len(sentences))]
+
+
 def synthesize(script, work_dir, lead_in=0.08, wav_name="narration.wav"):
     """Returns (wav_path, duration_seconds, timeline). timeline: list of dicts
-    {scene, text, start, end} in seconds."""
+    {scene, text, start, end} in seconds.
+
+    Each scene is spoken in ONE piece, so the voice keeps a natural flow and
+    intonation across sentences (instead of stitching single sentences together)."""
     work_dir = Path(work_dir)
     engine = "kokoro"
     try:
@@ -73,25 +120,26 @@ def synthesize(script, work_dir, lead_in=0.08, wav_name="narration.wav"):
         print(f"[tts] Kokoro unavailable ({exc}) -> using Edge-TTS fallback")
         engine = "edge"
 
-    pause = np.zeros(int(cfg.PAUSE_BETWEEN_SENTENCES * SAMPLE_RATE), dtype=np.float32)
+    scene_pause = np.zeros(int(cfg.PAUSE_BETWEEN_SCENES * SAMPLE_RATE), dtype=np.float32)
     chunks, timeline, cursor = [np.zeros(int(lead_in * SAMPLE_RATE), dtype=np.float32)], [], lead_in
 
     for scene_idx, scene in enumerate(script["scenes"]):
-        for sentence in split_sentences(scene["narration"]):
-            if engine == "kokoro":
-                try:
-                    audio = _synth_kokoro(sentence)
-                except Exception as exc:  # noqa: BLE001
-                    print(f"[tts] Kokoro failed on a sentence ({exc}); switching to Edge-TTS")
-                    engine = "edge"
-                    audio = _synth_edge(sentence, work_dir)
-            else:
-                audio = _synth_edge(sentence, work_dir)
-            audio = _trim_silence(audio)
-            dur = len(audio) / SAMPLE_RATE
-            timeline.append({"scene": scene_idx, "text": sentence, "start": cursor, "end": cursor + dur})
-            chunks += [audio, pause]
-            cursor += dur + len(pause) / SAMPLE_RATE
+        text = " ".join(scene["narration"].split())
+        sentences = split_sentences(text) or [text]
+        if engine == "kokoro":
+            try:
+                audio = _synth_kokoro(text)
+            except Exception as exc:  # noqa: BLE001
+                print(f"[tts] Kokoro failed ({exc}); switching to Edge-TTS")
+                engine = "edge"
+                audio = _synth_edge(text, work_dir)
+        else:
+            audio = _synth_edge(text, work_dir)
+        audio = _trim_silence(audio)
+        for sentence, (a, b) in zip(sentences, _sentence_spans(sentences, audio)):
+            timeline.append({"scene": scene_idx, "text": sentence, "start": cursor + a, "end": cursor + b})
+        chunks += [audio, scene_pause]
+        cursor += len(audio) / SAMPLE_RATE + len(scene_pause) / SAMPLE_RATE
 
     chunks.append(np.zeros(int(0.6 * SAMPLE_RATE), dtype=np.float32))
     full = np.concatenate(chunks)

@@ -159,13 +159,35 @@ def add_to_playlist(playlist_id, video_id):
     return "error"
 
 
+def wait_until_processed(video_id, max_minutes=8):
+    """YouTube accepts a custom thumbnail for a Short only after processing has finished."""
+    deadline = time.time() + max_minutes * 60
+    while time.time() < deadline:
+        try:
+            items = get_client().videos().list(part="processingDetails", id=video_id).execute().get("items", [])
+            status = items[0]["processingDetails"].get("processingStatus") if items else None
+        except (HttpError, *NETWORK_ERRORS) as exc:
+            print(f"[upload] Could not read processing status ({exc})")
+            return False
+        if status == "succeeded":
+            return True
+        if status in ("failed", "terminated"):
+            return False
+        time.sleep(20)
+    print("[upload] Processing took too long - thumbnail skipped this time")
+    return False
+
+
 def set_thumbnail(video_id, image_path):
+    """Returns True on success, False if YouTube refused (e.g. channel not eligible yet)."""
     try:
         get_client().thumbnails().set(videoId=video_id, media_body=MediaFileUpload(str(image_path), mimetype="image/jpeg")).execute()
         print("[upload] Custom thumbnail set")
+        return True
     except HttpError as exc:
         print(f"::warning::Thumbnail not set ({exc.resp.status}). Custom thumbnails need a phone-verified channel "
-              "(youtube.com/verify).")
+              "(youtube.com/verify); for Shorts YouTube may require Partner Program membership.")
+        return False
 
 
 def fetch_statistics(video_ids):

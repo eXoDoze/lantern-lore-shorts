@@ -7,7 +7,9 @@ from .llm_gemini_client import generate_json
 
 SYSTEM = f"""You are the head writer and narrator of "{cfg.CHANNEL_NAME}", a YouTube Shorts channel
 that retells legends, folklore and unexplained stories in a calm, eerie, campfire storyteller voice.
-Style: vivid but plain spoken English, short sentences, second person or storyteller voice,
+Style: vivid but plain spoken English that flows naturally when read aloud: mix short and medium-length
+sentences, connect thoughts with "and", "but", "until"; avoid chains of tiny fragments ("Silence. Then nothing. Cold.").
+Storyteller voice,
 no profanity, no gore, suspense over shock. Every short opens with a hook in the first sentence
 and ends with a chilling final line and a short question to the viewer. Never use emojis. Spell out numbers as words."""
 
@@ -59,8 +61,9 @@ Ending: the last scene ends with an eerie closing line, followed by ONE short qu
 (max ten words) that invites a comment, e.g. "Would you have opened the door?" or "Have you ever seen these lights?".
 Never ask for likes or subscriptions.
 {performance_hint}
-For every scene give a stock-footage search query (2-4 plain English words describing a filmable,
-atmospheric shot, e.g. "foggy forest night", "old wooden cabin", "lantern in dark"). No people's faces,
+For every scene give THREE stock-footage search queries (each 2-4 plain English words describing a filmable,
+atmospheric shot, e.g. "foggy forest night", "old wooden cabin", "lantern in dark"), from most specific to most
+general. Think about what a stock video site really has: landscapes, weather, buildings, objects, light. No people's faces,
 no brand names, no monsters (stock sites have none) - use mood shots instead.
 The footage MUST fit the story's setting: same kind of landscape and country, same season and time of day
 (e.g. a winter story in an English village -> "snowy village night", "frozen field dawn", never a summer
@@ -68,7 +71,7 @@ river or an Asian temple). Avoid objects that clearly belong to another culture 
 {feedback}
 Return JSON exactly like:
 {{"title": "curiosity-driven but honest title, max 60 characters, no hashtags, no emojis, no clickbait lies",
- "scenes": [{{"narration": "...", "footage_query": "..."}}],
+ "scenes": [{{"narration": "...", "footage_queries": ["specific", "medium", "general"]}}],
  "description": "2 short sentences for the YouTube description",
  "tags": ["8 to 12 lowercase tags"]}}"""
 
@@ -82,7 +85,7 @@ Fix problems with minimal changes, keep the same scene count, tone and similar l
 Script JSON:
 {script}
 
-Return JSON: {{"problems_found": ["..."], "scenes": [{{"narration": "...", "footage_query": "..."}}],
+Return JSON: {{"problems_found": ["..."], "scenes": [{{"narration": "...", "footage_queries": ["specific", "medium", "general"]}}],
 "title": "same or corrected title"}}"""
     try:
         checked = generate_json(prompt, temperature=0.2)
@@ -91,7 +94,8 @@ Return JSON: {{"problems_found": ["..."], "scenes": [{{"narration": "...", "foot
             if checked.get("problems_found"):
                 print(f"[writer] Fact-check fixed: {checked['problems_found']}")
             script["scenes"] = [
-                {"narration": s["narration"], "footage_query": s.get("footage_query") or o["footage_query"]}
+                {"narration": s["narration"], "footage_query": o["footage_query"],
+                 "footage_queries": o.get("footage_queries", [o["footage_query"]])}
                 for s, o in zip(scenes, script["scenes"])
             ]
             if checked.get("title"):
@@ -107,7 +111,16 @@ def _valid(script):
     scenes = script.get("scenes")
     if not isinstance(scenes, list) or not 3 <= len(scenes) <= 7:
         return False
-    return all(isinstance(s, dict) and s.get("narration") and s.get("footage_query") for s in scenes) and script.get("title")
+    for s in scenes:
+        if not isinstance(s, dict) or not s.get("narration"):
+            return False
+        queries = s.get("footage_queries") or ([s["footage_query"]] if s.get("footage_query") else [])
+        queries = [q for q in queries if isinstance(q, str) and q.strip()]
+        if not queries:
+            return False
+        s["footage_queries"] = queries[:3]
+        s["footage_query"] = queries[0]
+    return bool(script.get("title"))
 
 
 def write_script(series, topic, feedback="", performance_hint=""):

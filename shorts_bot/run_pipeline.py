@@ -7,19 +7,20 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import time
 import shutil
 import sys
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import channel_config as cfg
 from .ambient_music import make_background
 from .channel_stats import performance_hint, refresh_statistics, series_multipliers
 from .playlist_manager import add_video as add_to_series_playlist
-from .footage_stock import fetch_clip
+from .footage_stock import choose_clips
 from .story_writer import write_script
 from .topic_planner import find_new_topic, load_history, pick_series, save_history, uploads_today
 from .video_renderer import render
@@ -44,6 +45,42 @@ def build_description(script, series, clips):
         f"Narration: AI voice. {footage} Music: original.\n\n"
         f"{hashtags}"
     )
+
+
+STATE_FILE = ROOT / "data" / "bot_state.json"
+
+
+def _load_state():
+    try:
+        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def set_short_thumbnail(video_id, work_dir, title, series_label):
+    """Custom cover image for the Short, so the channel grid shows a fixed, readable title
+    instead of a random frame. If YouTube refuses (channel not eligible yet), the bot only
+    tries again every 14 days to save time."""
+    from .video_renderer import make_short_thumbnail
+    from .youtube_uploader import set_thumbnail, wait_until_processed
+    state = _load_state()
+    retry_after = state.get("short_thumbnail_retry_after")
+    if retry_after and datetime.now(timezone.utc).isoformat() < retry_after:
+        print(f"[thumbnail] Skipped - YouTube refused Shorts thumbnails earlier, next try after {retry_after[:10]}")
+        return
+    try:
+        thumb = Path(work_dir) / "short_thumbnail.jpg"
+        make_short_thumbnail(Path(work_dir) / "scene_0.mp4", title, series_label, thumb, work_dir)
+        if not wait_until_processed(video_id):
+            return
+        if set_thumbnail(video_id, thumb):
+            state.pop("short_thumbnail_retry_after", None)
+        else:
+            state["short_thumbnail_retry_after"] = (datetime.now(timezone.utc) + timedelta(days=14)).isoformat()
+        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[thumbnail] Skipped ({exc})")
 
 
 def write_summary(lines):
@@ -91,10 +128,8 @@ def make_one(history, series_key, upload_enabled, work_dir, multipliers=None, hi
     used_ids = set()
     for v in history["videos"][-300:]:
         used_ids.update(v.get("footage_ids", []))
-    clips = []
-    for i, scene in enumerate(script["scenes"]):
-        scene_len = sum(t["end"] - t["start"] for t in timeline if t["scene"] == i) + 1
-        clips.append(fetch_clip(scene["footage_query"], scene_len, work_dir, used_ids, i))
+    lengths = [sum(t["end"] - t["start"] for t in timeline if t["scene"] == i) + 1 for i in range(len(script["scenes"]))]
+    clips = choose_clips(script["scenes"], lengths, work_dir, used_ids)
 
     music = make_background(duration, work_dir)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
@@ -110,6 +145,7 @@ def make_one(history, series_key, upload_enabled, work_dir, multipliers=None, hi
         from .youtube_uploader import upload
         video_id, status = upload(out_path, script["title"], description, tags)
         add_to_series_playlist(series["key"], video_id)
+        set_short_thumbnail(video_id, work_dir, script["title"], series["label"])
 
     entry = {
         "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),

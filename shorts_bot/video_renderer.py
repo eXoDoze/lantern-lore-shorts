@@ -168,3 +168,35 @@ def render(clips, timeline, narration_wav, music_wav, duration, series_label, wo
         "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-movflags", "+faststart", str(out_path)])
     print(f"[render] Finished {out_path}")
     return out_path
+
+
+def make_short_thumbnail(scene_video, title, series_label, out_path, work_dir):
+    """1080x1920 cover image: a clean frame (no captions) + series label + big title."""
+    import textwrap
+    lines = textwrap.wrap(_clean(title).upper(), width=14)[:4]
+    title_text = "\\N".join(lines)
+    ass = Path(work_dir) / "thumbnail_short.ass"
+    ass.write_text(f"""[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Label,Anton,62,&H0033B8FF,&H0033B8FF,&H00000000,&H00000000,0,0,0,0,100,100,6,0,1,4,0,8,60,60,260,1
+Style: Title,Anton,132,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,1,0,1,9,4,5,70,70,0,1
+Style: Brand,Anton,46,&H00D0D0D0,&H00D0D0D0,&H00000000,&H00000000,0,0,0,0,100,100,4,0,1,3,0,2,60,60,300,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:05.00,Label,,0,0,0,,{_clean(series_label)}
+Dialogue: 0,0:00:00.00,0:00:05.00,Title,,0,0,0,,{title_text}
+Dialogue: 0,0:00:00.00,0:00:05.00,Brand,,0,0,0,,LANTERN LORE
+""", encoding="utf-8")
+    ass_arg = str(ass.resolve()).replace("\\", "/").replace(":", "\\:")
+    font_arg = str(FONT_DIR.resolve()).replace("\\", "/").replace(":", "\\:")
+    _run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "1.0", "-i", str(scene_video), "-frames:v", "1",
+          "-vf", f"scale=1080:1920,eq=brightness=-0.08,vignette=PI/3.5,ass='{ass_arg}':fontsdir='{font_arg}'",
+          "-q:v", "3", str(out_path)])
+    return out_path

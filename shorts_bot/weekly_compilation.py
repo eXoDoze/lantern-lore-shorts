@@ -21,7 +21,7 @@ from pathlib import Path
 from . import channel_config as cfg
 from .ambient_music import make_background
 from .channel_stats import refresh_statistics, _score
-from .footage_stock import fetch_clip
+from .footage_stock import choose_clips
 from .llm_gemini_client import generate_json
 from .playlist_manager import COMPILATION_KEY, add_video as add_to_playlist
 from .topic_planner import load_history, save_history
@@ -164,10 +164,8 @@ def _narrated_segment(scenes, label, work_dir, out_path, used_ids):
     work_dir.mkdir(parents=True, exist_ok=True)
     script = {"scenes": scenes}
     wav, duration, timeline = synthesize(script, work_dir, lead_in=0.6)
-    clips = []
-    for i, scene in enumerate(scenes):
-        scene_len = sum(t["end"] - t["start"] for t in timeline if t["scene"] == i) + 1.5
-        clips.append(fetch_clip(scene["footage_query"], scene_len, work_dir, used_ids, i, landscape=True))
+    lengths = [sum(t["end"] - t["start"] for t in timeline if t["scene"] == i) + 1.5 for i in range(len(scenes))]
+    clips = choose_clips(scenes, lengths, work_dir, used_ids, landscape=True)
     music = make_background(duration, work_dir)
     render(clips, timeline, wav, music, duration, label, work_dir, out_path, profile="longform")
     return clips
