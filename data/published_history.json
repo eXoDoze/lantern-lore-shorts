@@ -37,7 +37,7 @@
         "likes": 0,
         "comments": 0
       },
-      "stats_date": "2026-11-27T14:27:11+00:00"
+      "stats_date": "2026-11-27T19:36:52+00:00"
     },
     {
       "date": "2026-11-25T22:59:07+00:00",
@@ -55,11 +55,11 @@
         "pixabay:1623"
       ],
       "stats": {
-        "views": 1064,
-        "likes": 24,
+        "views": 1172,
+        "likes": 25,
         "comments": 0
       },
-      "stats_date": "2026-11-27T14:27:11+00:00"
+      "stats_date": "2026-11-27T19:36:52+00:00"
     },
     {
       "date": "2026-11-26T01:25:57+00:00",
@@ -101,11 +101,11 @@
       "description": "Explore the eerie Chilean legend of El Caleuche, a glowing phantom ship that haunts the waters of Chiloé with spectral music.",
       "fiction": false,
       "stats": {
-        "views": 44,
+        "views": 45,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-27T14:27:11+00:00"
+      "stats_date": "2026-11-27T19:36:52+00:00"
     },
     {
       "date": "2026-11-26T14:44:42+00:00",
@@ -147,11 +147,11 @@
       "description": "Discover the eerie legend surrounding Tennessee's famous Bell Witch Cave and its cursed stones. Locals warn that removing even one small pebble brings lifelong misfortune.",
       "fiction": false,
       "stats": {
-        "views": 54,
+        "views": 57,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-27T14:27:11+00:00"
+      "stats_date": "2026-11-27T19:36:52+00:00"
     },
     {
       "date": "2026-11-26T19:55:23+00:00",
@@ -193,11 +193,11 @@
       "description": "A farmhouse in nineteen fifty five Kentucky was allegedly besieged by silver humanoids. Explore this classic American cryptid encounter.",
       "fiction": false,
       "stats": {
-        "views": 77,
-        "likes": 3,
+        "views": 125,
+        "likes": 5,
         "comments": 0
       },
-      "stats_date": "2026-11-27T14:27:11+00:00"
+      "stats_date": "2026-11-27T19:36:52+00:00"
     },
     {
       "date": "2026-11-27T00:23:00+00:00",
@@ -234,11 +234,11 @@
       "description": "Deep within Romania lies Hoia Baciu, a forest famous for crooked trees and lost time. Explore the eerie legends surrounding Transylvania's most haunted woods.",
       "fiction": false,
       "stats": {
-        "views": 39,
+        "views": 77,
         "likes": 3,
         "comments": 0
       },
-      "stats_date": "2026-11-27T14:27:11+00:00"
+      "stats_date": "2026-11-27T19:36:52+00:00"
     },
     {
       "date": "2026-11-27T14:32:58+00:00",
@@ -278,6 +278,77 @@
         }
       ],
       "description": "Deep within the Brazilian rainforest, legends speak of the Mapinguari, a terrifying giant with backwards feet. Explore the eerie folklore of South America's most mysterious jungle creature.",
+      "fiction": false,
+      "stats": {
+        "views": 4,
+        "likes": 0,
+        "comments": 0
+      },
+      "stats_date": "2026-11-27T19:36:52+00:00"
+    },
+    {
+      "date": "2026-11-27T19:46:13+00:00",
+      "series": "cryptids",
+      "subject": "The Lusca of the Blue Holes",
+      "title": "The Terrifying Secret of the Bahamas Blue Holes",
+      "duration": 54.8,
+      "video_id": "JPzKU3V1mWI",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:374784",
+        "pixabay:304019",
+        "pixabay:16160",
+        "pixabay:63427",
+        "pixabay:212057"
+      ],
+      "scenes": [
+        {
+          "narration": "Sudden inward currents can create powerful surface suction. Off Andros Island, deep sinkholes drop straight into underwater darkness, where ocean tides act like violent whirlpools.",
+          "footage_query": "tropical blue hole aerial",
+          "footage_queries": [
+            "tropical blue hole aerial",
+            "swirling ocean current underwater",
+            "dark ocean water"
+          ]
+        },
+        {
+          "narration": "Locals call them blue holes, and for generations, fishermen have warned each other never to drift over their shadowy centers.",
+          "footage_query": "wooden fishing boat ocean",
+          "footage_queries": [
+            "wooden fishing boat ocean",
+            "deep blue sea surface",
+            "clear ocean horizon"
+          ]
+        },
+        {
+          "narration": "According to legend, a colossal predator called the Lusca lurks in these submerged caverns. Witnesses claimed it uses massive tentacles to snatch unsuspecting sailors and drag small boats beneath the waves.",
+          "footage_query": "submerged underwater cave entrance",
+          "footage_queries": [
+            "submerged underwater cave entrance",
+            "dark ocean cave light",
+            "underwater abyss dark"
+          ]
+        },
+        {
+          "narration": "Science points to shifting tides inside the cave systems, but divers still report sudden suction and an eerie feeling of being watched.",
+          "footage_query": "underwater cavern light rays",
+          "footage_queries": [
+            "underwater cavern light rays",
+            "deep underwater limestone cave",
+            "murky water light"
+          ]
+        },
+        {
+          "narration": "Some secrets stay hidden in the subterranean dark, waiting for the water to churn. Would you swim near a blue hole?",
+          "footage_query": "churning sea water surface",
+          "footage_queries": [
+            "churning sea water surface",
+            "deep sea water bubbling",
+            "dark blue ocean sunset"
+          ]
+        }
+      ],
+      "description": "For centuries, Bahamian fishermen have blamed terrifying underwater suction and sudden disappearances on the Lusca. Discover the eerie legend lurking inside the ocean deep subterranean caves.",
       "fiction": false
     }
   ]
