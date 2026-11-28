@@ -37,7 +37,7 @@
         "likes": 0,
         "comments": 0
       },
-      "stats_date": "2026-11-28T00:10:51+00:00"
+      "stats_date": "2026-11-28T14:14:26+00:00"
     },
     {
       "date": "2026-11-25T22:59:07+00:00",
@@ -55,11 +55,11 @@
         "pixabay:1623"
       ],
       "stats": {
-        "views": 1180,
+        "views": 1188,
         "likes": 25,
         "comments": 0
       },
-      "stats_date": "2026-11-28T00:10:51+00:00"
+      "stats_date": "2026-11-28T14:14:26+00:00"
     },
     {
       "date": "2026-11-26T01:25:57+00:00",
@@ -101,11 +101,11 @@
       "description": "Explore the eerie Chilean legend of El Caleuche, a glowing phantom ship that haunts the waters of Chiloé with spectral music.",
       "fiction": false,
       "stats": {
-        "views": 49,
+        "views": 51,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-28T00:10:51+00:00"
+      "stats_date": "2026-11-28T14:14:26+00:00"
     },
     {
       "date": "2026-11-26T14:44:42+00:00",
@@ -147,11 +147,11 @@
       "description": "Discover the eerie legend surrounding Tennessee's famous Bell Witch Cave and its cursed stones. Locals warn that removing even one small pebble brings lifelong misfortune.",
       "fiction": false,
       "stats": {
-        "views": 79,
+        "views": 83,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-28T00:10:51+00:00"
+      "stats_date": "2026-11-28T14:14:26+00:00"
     },
     {
       "date": "2026-11-26T19:55:23+00:00",
@@ -193,11 +193,11 @@
       "description": "A farmhouse in nineteen fifty five Kentucky was allegedly besieged by silver humanoids. Explore this classic American cryptid encounter.",
       "fiction": false,
       "stats": {
-        "views": 232,
-        "likes": 8,
+        "views": 356,
+        "likes": 9,
         "comments": 0
       },
-      "stats_date": "2026-11-28T00:10:51+00:00"
+      "stats_date": "2026-11-28T14:14:26+00:00"
     },
     {
       "date": "2026-11-27T00:23:00+00:00",
@@ -234,11 +234,11 @@
       "description": "Deep within Romania lies Hoia Baciu, a forest famous for crooked trees and lost time. Explore the eerie legends surrounding Transylvania's most haunted woods.",
       "fiction": false,
       "stats": {
-        "views": 86,
+        "views": 126,
         "likes": 3,
         "comments": 0
       },
-      "stats_date": "2026-11-28T00:10:51+00:00"
+      "stats_date": "2026-11-28T14:14:26+00:00"
     },
     {
       "date": "2026-11-27T14:32:58+00:00",
@@ -280,11 +280,11 @@
       "description": "Deep within the Brazilian rainforest, legends speak of the Mapinguari, a terrifying giant with backwards feet. Explore the eerie folklore of South America's most mysterious jungle creature.",
       "fiction": false,
       "stats": {
-        "views": 7,
+        "views": 15,
         "likes": 0,
         "comments": 0
       },
-      "stats_date": "2026-11-28T00:10:51+00:00"
+      "stats_date": "2026-11-28T14:14:26+00:00"
     },
     {
       "date": "2026-11-27T19:46:13+00:00",
@@ -351,11 +351,11 @@
       "description": "For centuries, Bahamian fishermen have blamed terrifying underwater suction and sudden disappearances on the Lusca. Discover the eerie legend lurking inside the ocean deep subterranean caves.",
       "fiction": false,
       "stats": {
-        "views": 45,
+        "views": 57,
         "likes": 2,
-        "comments": 1
+        "comments": 2
       },
-      "stats_date": "2026-11-28T00:10:51+00:00"
+      "stats_date": "2026-11-28T14:14:26+00:00"
     },
     {
       "date": "2026-11-28T00:15:20+00:00",
@@ -410,6 +410,87 @@
         }
       ],
       "description": "Explore the eerie Appalachian legend of the Wampus Cat, a creature said to cry like a weeping traveler in the dark woods of East Tennessee. Learn why old-timers warn never to follow a voice off the trail at night.",
+      "fiction": false,
+      "stats": {
+        "views": 48,
+        "likes": 2,
+        "comments": 0
+      },
+      "stats_date": "2026-11-28T14:14:26+00:00"
+    },
+    {
+      "date": "2026-11-28T14:21:06+00:00",
+      "series": "haunted_places",
+      "subject": "Dering Woods",
+      "title": "The Screaming Woods of Kent",
+      "duration": 50.7,
+      "video_id": "0SWoQMafDzA",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:11721",
+        "pixabay:382065",
+        "pixabay:935",
+        "pixabay:134913",
+        "pixabay:348441",
+        "pixabay:9604"
+      ],
+      "scenes": [
+        {
+          "narration": "If you hear disembodied shrieks in the trees, do not answer.",
+          "footage_query": "dark english forest",
+          "footage_queries": [
+            "dark english forest",
+            "creepy woods night",
+            "foggy forest tree"
+          ]
+        },
+        {
+          "narration": "Deep in the county of Kent, England, lies Dering Woods, a dense and ancient woodland that locals simply call the Screaming Woods.",
+          "footage_query": "dense forest aerial",
+          "footage_queries": [
+            "dense forest aerial",
+            "british woodland mist",
+            "dark trees landscape"
+          ]
+        },
+        {
+          "narration": "According to the old legend, the moment night falls over the canopy, terrifying human cries begin to echo through the heavy and choking fog.",
+          "footage_query": "foggy woodland path",
+          "footage_queries": [
+            "foggy woodland path",
+            "dark forest mist",
+            "moody tree shadows"
+          ]
+        },
+        {
+          "narration": "Brave witnesses have also reported cold and disembodied whispers brushing directly past their ears in the complete darkness.",
+          "footage_query": "dark forest night",
+          "footage_queries": [
+            "dark forest night",
+            "woods at night",
+            "shadowy tree trunk"
+          ]
+        },
+        {
+          "narration": "No earthly source for these harrowing cries has ever been found, and the silent shadows here always seem to watch your every move.",
+          "footage_query": "dark forest canopy",
+          "footage_queries": [
+            "dark forest canopy",
+            "moody forest view",
+            "gloomy nature scene"
+          ]
+        },
+        {
+          "narration": "The twisting trees hide ancient secrets that refuse to rest. Would you walk these haunted woods alone?",
+          "footage_query": "dark forest path",
+          "footage_queries": [
+            "dark forest path",
+            "creepy woodland",
+            "dark nature background"
+          ]
+        }
+      ],
+      "description": "Explore the eerie legend of Dering Woods in Kent, England, where disembodied shrieks echo after dark. Would you dare to enter?",
       "fiction": false
     }
   ]
