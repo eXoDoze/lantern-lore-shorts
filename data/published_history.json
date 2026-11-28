@@ -37,7 +37,7 @@
         "likes": 0,
         "comments": 0
       },
-      "stats_date": "2026-11-27T19:36:52+00:00"
+      "stats_date": "2026-11-28T00:10:51+00:00"
     },
     {
       "date": "2026-11-25T22:59:07+00:00",
@@ -55,11 +55,11 @@
         "pixabay:1623"
       ],
       "stats": {
-        "views": 1172,
+        "views": 1180,
         "likes": 25,
         "comments": 0
       },
-      "stats_date": "2026-11-27T19:36:52+00:00"
+      "stats_date": "2026-11-28T00:10:51+00:00"
     },
     {
       "date": "2026-11-26T01:25:57+00:00",
@@ -101,11 +101,11 @@
       "description": "Explore the eerie Chilean legend of El Caleuche, a glowing phantom ship that haunts the waters of Chiloé with spectral music.",
       "fiction": false,
       "stats": {
-        "views": 45,
+        "views": 49,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-27T19:36:52+00:00"
+      "stats_date": "2026-11-28T00:10:51+00:00"
     },
     {
       "date": "2026-11-26T14:44:42+00:00",
@@ -147,11 +147,11 @@
       "description": "Discover the eerie legend surrounding Tennessee's famous Bell Witch Cave and its cursed stones. Locals warn that removing even one small pebble brings lifelong misfortune.",
       "fiction": false,
       "stats": {
-        "views": 57,
+        "views": 79,
         "likes": 1,
         "comments": 0
       },
-      "stats_date": "2026-11-27T19:36:52+00:00"
+      "stats_date": "2026-11-28T00:10:51+00:00"
     },
     {
       "date": "2026-11-26T19:55:23+00:00",
@@ -193,11 +193,11 @@
       "description": "A farmhouse in nineteen fifty five Kentucky was allegedly besieged by silver humanoids. Explore this classic American cryptid encounter.",
       "fiction": false,
       "stats": {
-        "views": 125,
-        "likes": 5,
+        "views": 232,
+        "likes": 8,
         "comments": 0
       },
-      "stats_date": "2026-11-27T19:36:52+00:00"
+      "stats_date": "2026-11-28T00:10:51+00:00"
     },
     {
       "date": "2026-11-27T00:23:00+00:00",
@@ -234,11 +234,11 @@
       "description": "Deep within Romania lies Hoia Baciu, a forest famous for crooked trees and lost time. Explore the eerie legends surrounding Transylvania's most haunted woods.",
       "fiction": false,
       "stats": {
-        "views": 77,
+        "views": 86,
         "likes": 3,
         "comments": 0
       },
-      "stats_date": "2026-11-27T19:36:52+00:00"
+      "stats_date": "2026-11-28T00:10:51+00:00"
     },
     {
       "date": "2026-11-27T14:32:58+00:00",
@@ -280,11 +280,11 @@
       "description": "Deep within the Brazilian rainforest, legends speak of the Mapinguari, a terrifying giant with backwards feet. Explore the eerie folklore of South America's most mysterious jungle creature.",
       "fiction": false,
       "stats": {
-        "views": 4,
+        "views": 7,
         "likes": 0,
         "comments": 0
       },
-      "stats_date": "2026-11-27T19:36:52+00:00"
+      "stats_date": "2026-11-28T00:10:51+00:00"
     },
     {
       "date": "2026-11-27T19:46:13+00:00",
@@ -349,6 +349,67 @@
         }
       ],
       "description": "For centuries, Bahamian fishermen have blamed terrifying underwater suction and sudden disappearances on the Lusca. Discover the eerie legend lurking inside the ocean deep subterranean caves.",
+      "fiction": false,
+      "stats": {
+        "views": 45,
+        "likes": 2,
+        "comments": 1
+      },
+      "stats_date": "2026-11-28T00:10:51+00:00"
+    },
+    {
+      "date": "2026-11-28T00:15:20+00:00",
+      "series": "appalachian",
+      "subject": "The Legend of the Wampus Cat",
+      "title": "The Legend of the Tennessee Wampus Cat",
+      "duration": 56.4,
+      "video_id": "RDuc6e50jwk",
+      "privacy": "public",
+      "footage_ids": [
+        "pixabay:42396",
+        "pixabay:236711",
+        "pixabay:215530",
+        "pixabay:382066"
+      ],
+      "scenes": [
+        {
+          "narration": "If you hear a woman crying in the Tennessee woods, keep walking. Old-timers in the Great Smoky Mountains warn that those desperate sobs rarely belong to a lost traveler, but to the feared Wampus Cat.",
+          "footage_query": "smoky mountains fog night",
+          "footage_queries": [
+            "smoky mountains fog night",
+            "dark mountain forest",
+            "foggy woods"
+          ]
+        },
+        {
+          "narration": "According to mountain lore, a woman once hid beneath a panther skin to spy on sacred ceremonies. When discovered, a curse bound her forever to the wild beast.",
+          "footage_query": "old mountain fire night",
+          "footage_queries": [
+            "old mountain fire night",
+            "campfire in dark forest",
+            "woodland fire night"
+          ]
+        },
+        {
+          "narration": "Locals say she roams the misty ridges on six legs, her eyes glowing like hot embers. Hunters report tracking a shadow that moves silently through the trees, leaving half-human tracks behind.",
+          "footage_query": "glowing light misty forest",
+          "footage_queries": [
+            "glowing light misty forest",
+            "dark foggy ridges",
+            "misty forest night"
+          ]
+        },
+        {
+          "narration": "Legend holds that she mimics human weeping to lure unsuspecting wanderers off the trail and into the dark brush. The mountain wind still carries a scream that turns human just before it vanishes into the night. Would you answer a cry in these dark woods?",
+          "footage_query": "dark trail mountain woods",
+          "footage_queries": [
+            "dark trail mountain woods",
+            "scary forest path night",
+            "night woods shadow"
+          ]
+        }
+      ],
+      "description": "Explore the eerie Appalachian legend of the Wampus Cat, a creature said to cry like a weeping traveler in the dark woods of East Tennessee. Learn why old-timers warn never to follow a voice off the trail at night.",
       "fiction": false
     }
   ]
